@@ -1,0 +1,180 @@
+.container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #282c34;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.item {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.programHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.programName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #282c34;
+}
+
+.workoutCount {
+  font-size: 0.875rem;
+  color: #6c757d;
+  background: #f8f9fa;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.programStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.statValue {
+  font-size: 1rem;
+  color: #282c34;
+  font-weight: 500;
+}
+
+.viewButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.viewButton:hover {
+  background-color: #0056b3;
+}
+
+.viewButton:focus {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loadingText {
+  display: block;
+  color: #6c757d;
+}
+
+/* Error state */
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin: 1rem;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.empty p {
+  margin: 0.5rem 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  .item {
+    border: 2px solid ButtonText;
+  }
+  
+  .viewButton {
+    border: 2px solid ButtonText;
+  }
+
+  .workoutCount {
+    border: 1px solid ButtonText;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .item {
+    padding: 1rem;
+  }
+
+  .programStats {
+    grid-template-columns: 1fr;
+  }
+}

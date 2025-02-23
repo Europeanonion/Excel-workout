@@ -1,0 +1,93 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.uploadLabel {
+  display: block;
+  cursor: pointer;
+}
+
+/* Hide the default file input but keep it accessible */
+.fileInput {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.uploadButton {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #007bff;
+  border: 2px solid #0056b3;
+  border-radius: 4px;
+  transition: background-color 0.2s, transform 0.1s;
+  text-align: center;
+  width: 100%;
+}
+
+.uploadButton:hover {
+  background-color: #0056b3;
+}
+
+.uploadButton:focus-within {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
+}
+
+/* Style for disabled state */
+.fileInput:disabled + .uploadButton {
+  background-color: #6c757d;
+  border-color: #5a6268;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.error {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.helpText {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Focus styles for keyboard navigation */
+.fileInput:focus + .uploadButton {
+  outline: 2px solid #0056b3;
+  outline-offset: 2px;
+}
+
+/* Active state */
+.uploadButton:active {
+  transform: translateY(1px);
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  .uploadButton {
+    border: 2px solid ButtonText;
+  }
+  
+  .error {
+    border: 1px solid ButtonText;
+  }
+}

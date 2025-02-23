@@ -4,10 +4,22 @@ p# Tech Context: Excel Workout PWA
 
 *   **Frontend:**
     *   **React:** JavaScript library for building user interfaces.
+        * Functional components with hooks
+        * CSS Modules for component-scoped styling
+        * React Testing Library for component testing
     *   **TypeScript:**  Superset of JavaScript that adds static typing.
+        * Strict type checking enabled
+        * Custom type declarations for CSS modules
+        * Comprehensive interfaces for data models
     *   **IndexedDB:**  Browser-based NoSQL database for offline storage.
+        * Structured workout program storage
+        * Async/await wrapper functions
+        * Error handling and type safety
     *   **`idb` library:**  A small wrapper around IndexedDB for easier use.
     *   **`xlsx` library:**  For parsing Excel files.
+        * Dynamic header mapping
+        * Type-safe data extraction
+        * Error handling for invalid files
     *   **`uuid` library:** For generating unique identifiers.
     *   **Service Worker API:** For enabling PWA features (offline support, background sync).
 *   **Backend:**
@@ -42,11 +54,47 @@ p# Tech Context: Excel Workout PWA
 
 ## Technical Constraints
 
-*   **iOS Safari Compatibility:**  The PWA must be fully compatible with iOS Safari, including IndexedDB and service worker support.
-*   **Offline-First:**  The application must function correctly even without an internet connection.
-* **Excel File Complexity:** The application should handle a reasonable level of complexity in the Excel files, including merged cells and different data types. We are using dynamic header mapping to increase flexibility.
+*   **iOS Safari Compatibility:**  
+    * Full IndexedDB support with error handling
+    * Service worker compatibility
+    * Touch-friendly UI components
+    * High contrast mode support
+*   **Offline-First:**  
+    * Complete offline functionality
+    * Local-first data storage
+    * Background sync capability
+    * Graceful error handling
+*   **Excel File Complexity:** 
+    * Dynamic header mapping for flexibility
+    * Support for merged cells
+    * Multiple data type handling
+    * Validation and error reporting
+*   **Accessibility:**
+    * ARIA attributes for all components
+    * Semantic HTML structure
+    * Keyboard navigation support
+    * Screen reader compatibility
 
 ## Dependencies
 * Listed in `package.json`
+
+## Development Patterns
+* **Component Structure:**
+    * One component per file
+    * CSS Module for styling
+    * Test file alongside component
+    * Index.ts for clean exports
+* **Type Safety:**
+    * TypeScript interfaces for all data structures
+    * Strict null checks enabled
+    * Type declarations for external modules
+* **Testing:**
+    * Jest for unit testing
+    * React Testing Library for components
+    * Mock implementations for external services
+* **Error Handling:**
+    * Type-safe error handling
+    * User-friendly error messages
+    * Comprehensive error logging
 
 **Note:** We should consider using a validation library like Zod or Yup for more complex data validation scenarios.

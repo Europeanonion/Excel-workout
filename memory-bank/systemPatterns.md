@@ -12,22 +12,65 @@ This application follows a client-server architecture, with the PWA acting as th
 
 ## Design Patterns
 
-*   **Component-Based UI (React):** The user interface is built using reusable React components.
-*   **Feature-Based Architecture:** The codebase is organized by feature, promoting modularity and maintainability.
-*   **Model-View-Controller (MVC):**  Loosely follows the MVC pattern, with React components as the View, the data model (TypeScript interfaces) as the Model, and the application logic (including data fetching and synchronization) as the Controller.
-* **Observer Pattern:** Used implicitly through React's state management and potentially explicitly with Firestore's real-time listeners.
+*   **Component-Based UI (React):** The user interface is built using reusable React components, each with its own:
+    * CSS Module for scoped styling
+    * TypeScript interface for props
+    * Comprehensive test suite
+    * Accessibility features
+*   **Feature-Based Architecture:** The codebase is organized by feature, promoting modularity and maintainability:
+    * Each feature has its own directory (e.g., excelParsing)
+    * Features contain related components, utilities, and tests
+    * Clear separation of concerns between features
+*   **Model-View-Controller (MVC):**  Loosely follows the MVC pattern:
+    * View: React components with CSS Modules
+    * Model: TypeScript interfaces and IndexedDB storage
+    * Controller: Feature-specific logic and data handling
+*   **Observer Pattern:** Used in multiple ways:
+    * React's state management for UI updates
+    * IndexedDB operations with async/await
+    * Component refresh triggers (e.g., ProgramList refresh after upload)
+*   **Compound Component Pattern:** Used in form-related components:
+    * ExcelUploader handles file input and validation
+    * Error and loading states managed internally
+    * Props for external event handling
 
 ## Component Relationships
 
 ```mermaid
-graph LR
+graph TB
     subgraph Client [PWA - React + TypeScript]
-        UI[User Interface Components] --> EL[Excel Parsing Logic (xlsx)]
-        UI --> IDB[IndexedDB (idb library)]
-        EL --> IDB
-        IDB --> FS[Firebase SDK]
+        subgraph Components
+            App[App Component] --> EU[ExcelUploader]
+            App --> PL[ProgramList]
+            PL --> WD[WorkoutDetails]
+            WD --> WS[WorkoutSession]
+        end
+        
+        subgraph Features
+            EU --> EP[Excel Parsing]
+            EP --> DM[Data Model]
+            PL --> DM
+            WD --> DM
+        end
+        
+        subgraph Storage
+            DM --> IDB[IndexedDB]
+            IDB --> FS[Firebase SDK]
+        end
     end
+    
     subgraph Server [Firebase]
         FS --> Firestore[Firestore Database]
-        FS --> FA[Firebase Authentication (Optional)]
+        FS --> FA[Firebase Authentication]
     end
+
+    style App fill:#f9f,stroke:#333,stroke-width:2px
+    style EU fill:#bbf,stroke:#333,stroke-width:2px
+    style PL fill:#bbf,stroke:#333,stroke-width:2px
+    style WD fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5
+    style WS fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5
+    
+    classDef implemented fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef planned fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5;
+    class EU,PL,EP,DM,IDB implemented;
+    class WD,WS planned;

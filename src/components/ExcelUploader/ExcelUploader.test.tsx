@@ -61,12 +61,14 @@ describe('ExcelUploader', () => {
 
   it('handles invalid file type', async () => {
     // Test with parent error handling
-    render(<ExcelUploader onUploadError={mockOnError} />);
+    const { unmount } = render(<ExcelUploader onUploadError={mockOnError} />);
     
     const input = screen.getByLabelText('Choose Excel file');
     const file = new File([''], 'test.txt', { type: 'text/plain' });
     
-    fireEvent.change(input, { target: { files: [file] } });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
     
     await waitFor(() => {
       expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
@@ -75,11 +77,16 @@ describe('ExcelUploader', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
+    unmount();
+
     // Test without parent error handling
     render(<ExcelUploader />);
     
-    const input2 = screen.getByLabelText('Choose Excel file');
-    fireEvent.change(input2, { target: { files: [file] } });
+    const newInput = screen.getByLabelText('Choose Excel file');
+    
+    await act(async () => {
+      fireEvent.change(newInput, { target: { files: [file] } });
+    });
     
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Please upload an Excel file (.xlsx or .xls)');
@@ -91,12 +98,14 @@ describe('ExcelUploader', () => {
     (parseExcelFile as jest.Mock).mockRejectedValue(new Error(errorMessage));
     
     // Test with parent error handling
-    render(<ExcelUploader onUploadError={mockOnError} />);
+    const { unmount } = render(<ExcelUploader onUploadError={mockOnError} />);
     
     const input = screen.getByLabelText('Choose Excel file');
     const file = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
-    fireEvent.change(input, { target: { files: [file] } });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
     
     await waitFor(() => {
       expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
@@ -105,11 +114,16 @@ describe('ExcelUploader', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
+    unmount();
+
     // Test without parent error handling
     render(<ExcelUploader />);
     
-    const input2 = screen.getByLabelText('Choose Excel file');
-    fireEvent.change(input2, { target: { files: [file] } });
+    const newInput = screen.getByLabelText('Choose Excel file');
+    
+    await act(async () => {
+      fireEvent.change(newInput, { target: { files: [file] } });
+    });
     
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(errorMessage);

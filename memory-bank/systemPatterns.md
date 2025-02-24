@@ -72,5 +72,5 @@ graph TB
     
     classDef implemented fill:#bbf,stroke:#333,stroke-width:2px;
     classDef planned fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5;
-    class EU,PL,EP,DM,IDB implemented;
-    class WD,WS planned;
+    class EU,PL,EP,DM,IDB,WD implemented;
+    class WS planned;

@@ -1,0 +1,72 @@
+.container {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .exerciseContainer {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+  }
+  
+  .setsContainer {
+    margin-top: 1rem;
+  }
+  
+  .set {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .setNumber {
+    margin-right: 1rem;
+    font-weight: bold;
+  }
+  
+  .inputLabel {
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .inputField {
+    margin-left: 0.5rem;
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 50px; /* Adjust as needed */
+  }
+
+  .textareaField {
+    margin-left: 0.5rem;
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    min-height: 60px;
+  }
+  
+  .addSetButton {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .addSetButton:hover {
+    background-color: #0056b3;
+  }
+
+  .notesContainer {
+    margin-top: 1rem;
+  }
+
+  .noSets {
+    color: #888;
+  }

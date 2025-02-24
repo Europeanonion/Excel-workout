@@ -30,22 +30,23 @@ Implementing core workout program management functionality and preparing for wor
 - Added comprehensive test coverage
 
 **Phase 2: Workout Tracking Interface**
-1. **Workout Details View:**
-   - Create WorkoutDetails component
-   - Implement workout navigation
-   - Add exercise details display
-   - Include workout history view
+**Completed:**
+- Create WorkoutDetails component
+- Implement workout navigation
+- Add exercise details display
+- Include workout history view
 
-2. **Session Tracking:**
-   - Create WorkoutSession component
-   - Implement set tracking interface
-   - Add progress indicators
-   - Include note-taking functionality
+**Next Steps:**
+1. **Session Tracking:**
+    - Create WorkoutSession component
+    - Implement set tracking interface
+    - Add progress indicators
+    - Include note-taking functionality
 
-3. **State Management:**
-   - Evaluate state complexity
-   - Consider implementing Zustand if needed
-   - Set up proper state persistence
+2. **State Management:**
+    - Evaluate state complexity
+    - Consider implementing Zustand if needed
+    - Set up proper state persistence
 
 **Phase 3: Data Synchronization and Refinement**
 1. **Firebase Integration:**
@@ -89,3 +90,30 @@ Implementing core workout program management functionality and preparing for wor
 *   Using dynamic header mapping for flexible Excel file parsing.
 *   Using UUIDs to uniquely identify workout programs.
 *   Using a timestamp-based merge strategy with user override for conflict resolution.
+
+## Potential Issues
+
+*   In `WorkoutDetails.tsx`, the `startWorkout` function updates the program's history in both the component's state and IndexedDB. This might lead to redundant updates to IndexedDB. It would be better to update the program in IndexedDB only when a workout session is *completed*, not when it's *started*.
+
+## Planned Fixes
+
+Here's the plan to address the current issues:
+
+1.  **`WorkoutDetails.tsx`:**
+    *   Fix the `console.error` syntax (add missing comma).
+
+2.  **`WorkoutDetails.test.tsx`:**
+    *   Fix the `waitFor` timeout syntax.
+    *   Update the selector for "Bench Press" to be more specific, using `within` and `getByRole('group', { name: /exercise-Bench Press/i })`.
+
+3.  **`WorkoutSession.tsx`:**
+      * Rename the imported `WorkoutSession` type to `WorkoutSessionType`.
+
+4.  **`App.test.tsx` and `ProgramList.test.tsx`:**
+    *   Wrap the `render` call in each test case with `MemoryRouter`.
+
+5.  **`ExcelUploader.test.tsx` and `WorkoutSession.test.tsx`:**
+    *   Wrap state updates and component rendering within `act()`.
+
+6.  **`excelParser.ts` and `excelParser.test.ts`:**
+    *   Update logic and tests to handle missing headers and exercise names.

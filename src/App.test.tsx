@@ -3,14 +3,14 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import App from './App';
 import { parseExcelFile } from './features/excelParsing/excelParser';
 import { getAllWorkoutPrograms } from './lib/indexedDB';
+import { MemoryRouter } from 'react-router-dom';
 
-// Mock the modules
 jest.mock('./features/excelParsing/excelParser', () => ({
-  parseExcelFile: jest.fn()
+  parseExcelFile: jest.fn(),
 }));
 
 jest.mock('./lib/indexedDB', () => ({
-  getAllWorkoutPrograms: jest.fn()
+  getAllWorkoutPrograms: jest.fn(),
 }));
 
 describe('App', () => {
@@ -22,7 +22,11 @@ describe('App', () => {
   it('renders header and both components', async () => {
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     
     // Header
     expect(screen.getByText('Excel Workout PWA')).toBeInTheDocument();
@@ -57,7 +61,11 @@ describe('App', () => {
     
     (parseExcelFile as jest.Mock).mockResolvedValue([]);
     
-    render(<App />);
+     render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     
     // Wait for initial load
     await waitFor(() => {
@@ -95,7 +103,11 @@ describe('App', () => {
     (parseExcelFile as jest.Mock).mockRejectedValue(new Error(errorMessage));
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     
-    render(<App />);
+   render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     
     // Wait for initial load
     await waitFor(() => {
@@ -119,7 +131,11 @@ describe('App', () => {
   it('maintains proper section structure and accessibility', async () => {
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     
-    render(<App />);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
     
     // Check section headings
     const headings = await screen.findAllByRole('heading');

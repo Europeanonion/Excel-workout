@@ -27,6 +27,12 @@
         * Accessibility features
         * Responsive design
         * High contrast mode support
+    * WorkoutDetails component with:
+        * Navigation from ProgramList
+        * Data fetching from IndexedDB
+        * Display of workout and exercise details
+        * Basic workout history view
+        * Accessibility features
     * Component integration with automatic list refresh
     * Comprehensive test coverage
 
@@ -34,7 +40,6 @@
 ## What's Left to Build
 
 *   **UI Components:** Build remaining React components for:
-    * Workout details view
     * Progress tracking interface
 *   **IndexedDB Integration:** Implement the logic for storing and retrieving data from IndexedDB using the `idb` library.
 *   **Firebase Integration:** Implement the logic for synchronizing data with Firestore.
@@ -50,11 +55,12 @@
 
 ## Current Status
 
-Project initialization and core functionality are complete. Excel parsing and local storage are working with full test coverage. Basic UI components for file upload and program listing are implemented with proper error handling, accessibility support, and test coverage. The application can now handle the full flow from Excel file upload to program display. Ready to begin implementing the workout tracking interface.
+Project initialization and core functionality are complete. Excel parsing and local storage are working with full test coverage. Basic UI components for file upload, program listing, and workout details are implemented with proper error handling, accessibility support, and test coverage. The application can now handle the full flow from Excel file upload to program display and viewing workout details. Ready to begin implementing the workout tracking interface (session tracking).
 
 ## Known Issues
 
-*   None at this time.
+*   Potential redundant IndexedDB update in `WorkoutDetails.tsx` (`startWorkout` function).
+
 
 ## TODO
-* Address npm package vulnerabilities and deprecation warnings.
+* Address npm package vulnerabilities and deprecation warnings. `npm audit` shows 23 vulnerabilities (16 moderate, 7 high). `npm audit fix` did not resolve them. `npm audit fix --force` is required for many, but might introduce breaking changes. The `xlsx` package has high severity vulnerabilities with no fix available.

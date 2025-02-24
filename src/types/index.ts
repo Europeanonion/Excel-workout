@@ -26,6 +26,7 @@ export interface Exercise {
 
 export interface WorkoutSession {
   sessionId: string; // UUID
+  programId: string; // ID of the associated WorkoutProgram
   date: string; // ISO 8601 format
   workoutName: string; // e.g., "Push #1"
   exercises: CompletedExercise[];

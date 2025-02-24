@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { WorkoutProgram } from '../../types';
 import { getAllWorkoutPrograms } from '../../lib/indexedDB';
 import styles from './program-list.module.css';
 
 export const ProgramList: React.FC = () => {
+  const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export const ProgramList: React.FC = () => {
 
             <button
               className={styles.viewButton}
-              onClick={() => {/* TODO: Implement workout view */}}
+              onClick={() => navigate(`/program/${program.id}`)}
               aria-label={`View ${program.name} details`}
             >
               View Program

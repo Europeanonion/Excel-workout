@@ -21,6 +21,7 @@ p# Tech Context: Excel Workout PWA
         * Type-safe data extraction
         * Error handling for invalid files
     *   **`uuid` library:** For generating unique identifiers.
+    *   **`react-router-dom`:** For client-side routing.
     *   **Service Worker API:** For enabling PWA features (offline support, background sync).
 *   **Backend:**
     *   **Firebase Firestore:** NoSQL, real-time database for data storage and synchronization.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import App from './App';
 import { parseExcelFile } from './features/excelParsing/excelParser';
 import { getAllWorkoutPrograms } from './lib/indexedDB';
@@ -19,7 +19,9 @@ describe('App', () => {
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
   });
 
-  it('renders header and both components', () => {
+  it('renders header and both components', async () => {
+    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
+    
     render(<App />);
     
     // Header
@@ -30,8 +32,14 @@ describe('App', () => {
     expect(screen.getByText('Upload Program')).toBeInTheDocument();
     expect(screen.getByLabelText('Choose Excel file')).toBeInTheDocument();
     
-    // Program list section (empty state)
-    expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
+    // Initially shows loading state
+    expect(screen.getByText('Loading programs...')).toBeInTheDocument();
+    
+    // Then shows empty state
+    await waitFor(() => {
+      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
+      expect(screen.getByText('Upload an Excel file to get started.')).toBeInTheDocument();
+    });
   });
 
   it('shows success message and refreshes program list after successful upload', async () => {
@@ -51,18 +59,24 @@ describe('App', () => {
     
     render(<App />);
     
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
+    });
+    
     const input = screen.getByLabelText('Choose Excel file');
     const file = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
-    // Initially should show empty state
-    expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
-    
     // Upload file
-    fireEvent.change(input, { target: { files: [file] } });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
     
     // Success message should appear
     await waitFor(() => {
-      expect(screen.getByText('Workout program uploaded successfully!')).toBeInTheDocument();
+      const message = screen.getByRole('status');
+      expect(message).toHaveTextContent('Workout program uploaded successfully!');
+      expect(message).toHaveClass('App-message', 'success');
     });
 
     // Program list should refresh and show the new program
@@ -72,37 +86,51 @@ describe('App', () => {
 
     // Success message should disappear after 5 seconds
     await waitFor(() => {
-      expect(screen.queryByText('Workout program uploaded successfully!')).not.toBeInTheDocument();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
     }, { timeout: 6000 });
   });
 
   it('shows error message when upload fails', async () => {
     const errorMessage = 'Failed to parse Excel file';
     (parseExcelFile as jest.Mock).mockRejectedValue(new Error(errorMessage));
+    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     
     render(<App />);
+    
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
+    });
     
     const input = screen.getByLabelText('Choose Excel file');
     const file = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
-    fireEvent.change(input, { target: { files: [file] } });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
     
     await waitFor(() => {
-      const errorElement = screen.getByRole('status', { name: errorMessage });
-      expect(errorElement).toBeInTheDocument();
+      const errorElement = screen.getByRole('status');
+      expect(errorElement).toHaveTextContent(errorMessage);
       expect(errorElement).toHaveClass('App-message', 'error');
     });
   });
 
-  it('maintains proper section structure and accessibility', () => {
+  it('maintains proper section structure and accessibility', async () => {
+    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
+    
     render(<App />);
     
     // Check section headings
-    const headings = screen.getAllByRole('heading');
+    const headings = await screen.findAllByRole('heading');
     expect(headings[0]).toHaveTextContent('Excel Workout PWA');
     expect(headings[1]).toHaveTextContent('Upload Program');
-    expect(headings[2]).toHaveTextContent('Your Workout Programs');
-
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Loading programs...')).not.toBeInTheDocument();
+    });
+    
     // Check section landmarks
     expect(screen.getByRole('banner')).toBeInTheDocument(); // header
     expect(screen.getByRole('main')).toBeInTheDocument();

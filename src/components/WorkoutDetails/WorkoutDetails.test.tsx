@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within, act } from '@testing-library/react';
 import { WorkoutDetails } from './WorkoutDetails';
 import { getWorkoutProgram } from '../../lib/indexedDB';
-import { WorkoutProgram } from '../../types';
+import type { WorkoutProgram } from '../../types';
 
 jest.mock('../../lib/indexedDB');
 
@@ -50,14 +50,18 @@ test('renders loading state', async () => {
   mockedGetWorkoutProgram.mockImplementation(
     () => new Promise((resolve) => setTimeout(resolve, 50))
   );
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(() => {
+    render(<WorkoutDetails programId="test-program-id" />);
+  });
   expect(screen.getByText(/Loading program.../i)).toBeInTheDocument();
   await waitFor(() => expect(screen.queryByText(/Loading program.../i)).not.toBeInTheDocument(), {timeout: 100});
 });
 
 test('renders error state', async () => {
   mockedGetWorkoutProgram.mockRejectedValue(new Error('Failed to load program'));
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(() => {
+      render(<WorkoutDetails programId="test-program-id" />);
+  });
   await waitFor(() =>
     expect(screen.getByText(/Failed to load workout program/i)).toBeInTheDocument()
   );
@@ -65,7 +69,9 @@ test('renders error state', async () => {
 
 test('renders workout program details', async () => {
   mockedGetWorkoutProgram.mockResolvedValue(mockWorkoutProgram);
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(async () => {
+      render(<WorkoutDetails programId="test-program-id" />);
+  });
 
   await waitFor(() => {
     expect(screen.getByText(/Test Program/i)).toBeInTheDocument();
@@ -77,7 +83,9 @@ test('renders workout program details', async () => {
 
 test('renders workout history', async () => {
   mockedGetWorkoutProgram.mockResolvedValue(mockWorkoutProgram);
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(() => {
+    render(<WorkoutDetails programId="test-program-id" />);
+  });
 
   await waitFor(() => {
     expect(screen.getByText('1/1/2024')).toBeInTheDocument();
@@ -87,7 +95,9 @@ test('renders workout history', async () => {
 test('renders no workout history message', async () => {
   const noHistoryProgram = { ...mockWorkoutProgram, history: [] };
   mockedGetWorkoutProgram.mockResolvedValue(noHistoryProgram);
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(() => {
+      render(<WorkoutDetails programId="test-program-id" />);
+  });
 
   await waitFor(() => {
     expect(screen.getByText(/No workout history yet/i)).toBeInTheDocument();

@@ -1,14 +1,26 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { ExcelUploader } from './components/ExcelUploader';
 import { ProgramList } from './components/ProgramList';
 import { WorkoutDetails } from './components/WorkoutDetails';
+import { initDB } from './lib/indexedDB';
 import './App.css';
 
 function App() {
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    useEffect(() => {
+        const initializeDB = async () => {
+            try {
+                await initDB();
+            } catch (error) {
+                console.error("Failed to initialize IndexedDB:", error);
+            }
+        };
+        initializeDB();
+    }, []);
 
   const handleUploadSuccess = useCallback(() => {
     setMessage('Workout program uploaded successfully!');

@@ -21,28 +21,26 @@ describe('App', () => {
 
   it('renders header and both components', async () => {
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
-    
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>
     );
-    
+
     // Header
     expect(screen.getByText('Excel Workout PWA')).toBeInTheDocument();
     expect(screen.getByText('Track and manage your workout programs')).toBeInTheDocument();
-    
+
     // Upload section
-    expect(screen.getByText('Upload Program')).toBeInTheDocument();
     expect(screen.getByLabelText('Choose Excel file')).toBeInTheDocument();
-    
+    expect(screen.getByText('Upload Program')).toBeInTheDocument();
     // Initially shows loading state
     expect(screen.getByText('Loading programs...')).toBeInTheDocument();
-    
+
     // Then shows empty state
     await waitFor(() => {
-      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
       expect(screen.getByText('Upload an Excel file to get started.')).toBeInTheDocument();
+      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
     });
   });
 
@@ -51,40 +49,41 @@ describe('App', () => {
       id: '1',
       name: 'Test Program',
       workouts: [],
-      history: []
+      history: [],
     };
 
     // First return empty array, then return with the new program
     (getAllWorkoutPrograms as jest.Mock)
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([mockProgram]);
-    
     (parseExcelFile as jest.Mock).mockResolvedValue([]);
-    
-     render(
+
+    render(
       <MemoryRouter>
         <App />
       </MemoryRouter>
     );
-    
+
     // Wait for initial load
     await waitFor(() => {
       expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
     });
-    
+
     const input = screen.getByLabelText('Choose Excel file');
-    const file = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
+    const file = new File([''], 'test.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
     // Upload file
     await act(async () => {
       fireEvent.change(input, { target: { files: [file] } });
     });
-    
+
     // Success message should appear
     await waitFor(() => {
       const message = screen.getByRole('status');
-      expect(message).toHaveTextContent('Workout program uploaded successfully!');
       expect(message).toHaveClass('App-message', 'success');
+      expect(message).toHaveTextContent('Workout program uploaded successfully!');
     });
 
     // Program list should refresh and show the new program
@@ -100,60 +99,65 @@ describe('App', () => {
 
   it('shows error message when upload fails', async () => {
     const errorMessage = 'Failed to parse Excel file';
+    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     (parseExcelFile as jest.Mock).mockRejectedValue(new Error(errorMessage));
-    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
-    
-   render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
-    );
-    
-    // Wait for initial load
-    await waitFor(() => {
-      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
-    });
-    
-    const input = screen.getByLabelText('Choose Excel file');
-    const file = new File([''], 'test.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    await act(async () => {
-      fireEvent.change(input, { target: { files: [file] } });
-    });
-    
-    await waitFor(() => {
-      const errorElement = screen.getByRole('status');
-      expect(errorElement).toHaveTextContent(errorMessage);
-      expect(errorElement).toHaveClass('App-message', 'error');
-    });
-  });
 
-  it('maintains proper section structure and accessibility', async () => {
-    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
-    
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>
     );
-    
+
+    // Wait for initial load
+    await waitFor(() => {
+      expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
+    });
+
+    const input = screen.getByLabelText('Choose Excel file');
+    const file = new File([''], 'test.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
+
+    await waitFor(() => {
+      const errorElement = screen.getByRole('status');
+      expect(errorElement).toHaveClass('App-message', 'error');
+      expect(errorElement).toHaveTextContent(errorMessage);
+    });
+  });
+
+  it('maintains proper section structure and accessibility', async () => {
+    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
+    render(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
+
     // Check section headings
     const headings = await screen.findAllByRole('heading');
     expect(headings[0]).toHaveTextContent('Excel Workout PWA');
     expect(headings[1]).toHaveTextContent('Upload Program');
-    
+
     // Wait for loading to complete
     await waitFor(() => {
       expect(screen.queryByText('Loading programs...')).not.toBeInTheDocument();
     });
-    
+
     // Check section landmarks
     expect(screen.getByRole('banner')).toBeInTheDocument(); // header
     expect(screen.getByRole('main')).toBeInTheDocument();
-    
+
     // Check that sections are properly labeled
     const sections = screen.getAllByRole('region');
-    expect(sections.some(section => section.getAttribute('aria-label') === 'Excel file upload')).toBe(true);
-    expect(sections.some(section => section.getAttribute('aria-label') === 'Workout Programs')).toBe(true);
+    expect(
+      sections.some((section) => section.getAttribute('aria-label') === 'Excel file upload')
+    ).toBe(true);
+    expect(
+      sections.some((section) => section.getAttribute('aria-label') === 'Workout Programs')
+    ).toBe(true);
   });
 });

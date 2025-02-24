@@ -67,10 +67,9 @@ graph TB
     style App fill:#f9f,stroke:#333,stroke-width:2px
     style EU fill:#bbf,stroke:#333,stroke-width:2px
     style PL fill:#bbf,stroke:#333,stroke-width:2px
-    style WD fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5
-    style WS fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5
+    style WD fill:#bbf,stroke:#333,stroke-width:2px
+    style WS fill:#bbf,stroke:#333,stroke-width:2px
     
     classDef implemented fill:#bbf,stroke:#333,stroke-width:2px;
     classDef planned fill:#ddd,stroke:#333,stroke-width:2px,stroke-dasharray: 5, 5;
-    class EU,PL,EP,DM,IDB,WD implemented;
-    class WS planned;
+    class EU,PL,EP,DM,IDB,WD,WS implemented;

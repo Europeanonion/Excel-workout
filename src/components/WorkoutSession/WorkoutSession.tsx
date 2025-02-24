@@ -60,9 +60,11 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
       const sets = completedSets[exercise.name] || [];
       const exerciseTotalLoad = sets.reduce((acc, set) => acc + (set.load || 0) * set.reps, 0);
       totalLoad += exerciseTotalLoad;
+        const exerciseNotes = notes[exercise.name] || null;
       return {
         exerciseName: exercise.name,
         sets: sets,
+        notes: exerciseNotes,
       };
     });
 
@@ -73,7 +75,7 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
       workoutName: workout.day,
       exercises: completedExercises,
       totalLoad,
-      notes: null,
+      notes: null, // Global notes are not used yet
     };
 
     try {
@@ -108,6 +110,9 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
         <div key={exercise.name} className={styles.exerciseContainer}>
           <h3>{exercise.name}</h3>
           <div className={styles.setsContainer}>
+            <p className={styles.progressIndicator}>
+              Set {completedSets[exercise.name]?.length || 0}/{exercise.workingSets || 0}
+            </p>
             {completedSets[exercise.name]?.map((set, index) => (
               <div key={index} className={styles.set}>
                 <span className={styles.setNumber}>Set {index + 1}:</span>

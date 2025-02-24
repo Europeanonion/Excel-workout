@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { WorkoutSession } from './WorkoutSession';
-import { Workout } from '../../types';
+import type { Workout } from '../../types';
 import * as idb from '../../lib/indexedDB';
 
 const mockWorkout: Workout = {
@@ -44,6 +44,8 @@ describe('WorkoutSession', () => {
       });
     expect(screen.getByText(/Workout Session: Push/i)).toBeInTheDocument();
     expect(screen.getByText(/Bench Press/i)).toBeInTheDocument();
+    expect(screen.getByText(/Set 0\/3/i)).toBeInTheDocument(); // Check for initial progress indicator
+    expect(screen.getByLabelText(/Notes for Bench Press/i)).toBeInTheDocument(); // Check for notes textarea
   });
 
   it('adds a set when Add Set button is clicked', async () => {
@@ -55,6 +57,7 @@ describe('WorkoutSession', () => {
           fireEvent.click(addButton);
       });
     expect(screen.getByText(/Set 1:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Set 1\/3/i)).toBeInTheDocument(); // Check progress indicator after adding a set
   });
 
   it('updates reps value when input changes', async() => {
@@ -122,6 +125,76 @@ describe('WorkoutSession', () => {
             expect(mockStoreWorkoutSession).toHaveBeenCalled();
             expect(mockStoreWorkoutProgram).toHaveBeenCalled();
 
+        });
+    });
+
+    it('updates program history in IndexedDB when Finish Workout is clicked', async () => {
+      const mockProgram = { id: programId, name: 'Test Program', workouts: [mockWorkout], history: [] };
+      (idb.getWorkoutProgram as jest.Mock).mockResolvedValue(mockProgram);
+      
+      await act(async () => {
+          render(<WorkoutSession workout={mockWorkout} programId={programId} />);
+      });
+
+      // Add a set and enter values
+      const addButton = screen.getByRole('button', { name: /Add Set/i });
+      await act(async () => {
+          fireEvent.click(addButton);
+      });
+      const repsInput = screen.getByLabelText(/Reps for set 1/i);
+      const loadInput = screen.getByLabelText(/Load for set 1/i);
+      const rpeInput = screen.getByLabelText(/RPE for set 1/i);
+      await act(async () => {
+          fireEvent.change(repsInput, { target: { value: '10' } });
+          fireEvent.change(loadInput, { target: { value: '50' } });
+          fireEvent.change(rpeInput, { target: { value: '7' } });
+      });
+
+      const finishButton = screen.getByRole('button', { name: /Finish Workout/i });
+      await act(async () => {
+          fireEvent.click(finishButton);
+      });
+
+      await waitFor(() => {
+          expect(mockStoreWorkoutProgram).toHaveBeenCalledWith(expect.objectContaining({
+              ...mockProgram,
+              history: expect.arrayContaining([expect.objectContaining({
+                  programId: programId,
+                  workoutName: mockWorkout.day,
+                  exercises: expect.arrayContaining([expect.objectContaining({
+                      exerciseName: mockWorkout.exercises[0].name,
+                      sets: expect.arrayContaining([{ reps: 10, load: 50, rpe: 7 }])
+                  })]),
+              })]),
+          }));
+      });
+  });
+    it('updates and stores notes correctly', async () => {
+        const mockProgram = { id: programId, name: 'Test Program', workouts: [mockWorkout], history: [] };
+        (idb.getWorkoutProgram as jest.Mock).mockResolvedValue(mockProgram);
+
+        await act(async () => {
+            render(<WorkoutSession workout={mockWorkout} programId={programId} />);
+        });
+
+        const notesTextarea = screen.getByLabelText(/Notes for Bench Press/i);
+        await act(async () => {
+            fireEvent.change(notesTextarea, { target: { value: 'Test notes' } });
+        });
+
+        const finishButton = screen.getByRole('button', { name: /Finish Workout/i });
+        await act(async () => {
+            fireEvent.click(finishButton);
+        });
+
+        await waitFor(() => {
+            expect(mockStoreWorkoutSession).toHaveBeenCalledWith(expect.objectContaining({
+                exercises: expect.arrayContaining([
+                    expect.objectContaining({
+                        notes: 'Test notes',
+                    }),
+                ]),
+            }));
         });
     });
 });

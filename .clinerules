@@ -93,6 +93,11 @@
 * `RULE: Avoid unnecessary re-renders.`
 * `RULE: Profile the application regularly to identify performance bottlenecks.`
 
+## Project Conventions
+* `RULE: Use UUIDs to uniquely identify workout programs and sessions.`
+* `RULE: Use a timestamp-based merge strategy with user override for data synchronization conflict resolution.`
+*   `RULE: The logic for updating a workout program's history should reside within the WorkoutSession component's handleFinishWorkout function, not in WorkoutDetails.`
+
 ## Accessibility (a11y)
 *   `RULE: Use semantic HTML elements (e.g., <nav>, <main>, <aside>, <article>, <section>, <h1>-<h6>) to structure the content.`
 *   `RULE: Provide alternative text for images using the alt attribute.`

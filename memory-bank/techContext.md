@@ -1,4 +1,4 @@
-p# Tech Context: Excel Workout PWA
+# Tech Context: Excel Workout PWA
 
 ## Technologies Used
 
@@ -55,17 +55,17 @@ p# Tech Context: Excel Workout PWA
 
 ## Technical Constraints
 
-*   **iOS Safari Compatibility:**  
+*   **iOS Safari Compatibility:**
     * Full IndexedDB support with error handling
     * Service worker compatibility
     * Touch-friendly UI components
     * High contrast mode support
-*   **Offline-First:**  
+*   **Offline-First:**
     * Complete offline functionality
     * Local-first data storage
     * Background sync capability
     * Graceful error handling
-*   **Excel File Complexity:** 
+*   **Excel File Complexity:**
     * Dynamic header mapping for flexibility
     * Support for merged cells
     * Multiple data type handling

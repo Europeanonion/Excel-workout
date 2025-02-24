@@ -19,8 +19,8 @@ const WorkoutComponent: React.FC<{ workout: Workout; programId: string }> = ({ w
 );
 
 const ExerciseComponent: React.FC<{ exercise: Exercise }> = ({ exercise }) => (
-  <div className={styles.exercise} role="group" aria-labelledby={`exercise-${exercise.name}`}>
-    <h4 id={`exercise-${exercise.name}`}>{exercise.name}</h4>
+  <div className={styles.exercise} role="group" aria-label={`Exercise: ${exercise.name}`}>
+    <h4>{exercise.name}</h4>
     <p>Warmup Sets: {exercise.warmupSets ?? 'N/A'}</p>
     <p>Working Sets: {exercise.workingSets ?? 'N/A'}</p>
     <p>Reps: {exercise.reps ?? 'N/A'}</p>

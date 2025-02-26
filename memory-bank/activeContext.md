@@ -1,83 +1,112 @@
-*   Provide exact code changes for manual application.
+# Active Context
+## Current Session
+2025-02-26 18:19 UTC
+Analyzed existing file structure and content, updated memory bank.
 
-## Further Analysis (Before Implementation)
+## Recent Changes
+- Created core documentation structure
+- Established product context baseline
+- Analyzed existing file structure and content
+- Updated memory bank files (activeContext.md, progress.md, decisionLog.md)
+- Identified failing tests and created plan to address them
 
-### Test Coverage
+## Open Questions
+1. Confirm long-term data storage strategy
+2. Validate Excel parsing requirements
+3. Determine approach for fixing failing tests
 
-To assess test coverage, run the following command:
+## Current Goals
+1. Fix failing tests in the following order:
+   - ExcelUploader.test.tsx
+   - ProgramList.test.tsx
+   - WorkoutDetails.test.tsx
+   - WorkoutSession.test.tsx
+   - App.test.tsx
+2. Implement Firebase integration for data synchronization
+3. Enhance WorkoutSession component with set tracking, progress indicators, and note-taking
+4. Implement proper state management
+5. Address security vulnerabilities in dependencies
 
-```
-npm test -- --coverage
-```
+### Findings from Codebase Analysis
+*   **File Organization:**
+    *   The codebase is well-organized and follows the project conventions.
+    *   **Suggestion:** Export helper functions and sub-components in `index.ts` files to allow for more flexibility and reusability.
+*   **Dependency Flow:**
+    *   The dependency flow seems correct, and there are no obvious circular dependencies or unused imports.
+*   **Code Flow:**
+    *   The code flow seems logical and consistent across the main components.
+*   **Error Handling:**
+    *   The error handling is consistent, but the error messages could be improved by using a more generic error message and providing more context in the console log.
+*   **Modularity and Maintainability:**
+    *   The codebase is modular and maintainable.
+    *   There are no `TODO` comments in the code.
+*   **Documentation and Comments:**
+    *   The codebase is well-documented, and the comments explain complex logic where needed.
+    *   **Suggestion:** Add more JSDoc comments to the functions and components to provide more information about their purpose, parameters, and return values.
+*   **Testing Coverage:**
+    *   There are several failing tests that need to be addressed.
+        *   `src/components/ExcelUploader/ExcelUploader.test.tsx`: 3 failing tests related to error handling for invalid file types and parsing errors.
+        *   `src/components/ProgramList/ProgramList.test.tsx`: 2 failing tests related to rendering the program list.
+        *   `src/App.test.tsx`: 4 failing tests related to routing.
+    *   There are warnings about deprecated `ReactDOMTestUtils.act` and React Router future flags.
 
-Review the generated coverage report to identify any areas of the code that are not adequately covered by tests.  Add or modify tests as needed to improve coverage.
+*   **`src/App.tsx` Analysis:**
+    *   **Structure:** The `App` component is the main entry point, using `react-router-dom` for routing.
+    *   **State:** Manages `message`, `messageType`, and `refreshTrigger` using `useState`.
+    *   **Callbacks:** Uses `useCallback` for `handleUploadSuccess` and `handleUploadError`.
+    *   **IndexedDB Initialization:** Initializes IndexedDB using `initDB` within a `useEffect` hook.
+    *   **Routing:** Defines routes for the home page ("/") and workout details page ("/program/:programId").
+    *   **Accessibility:** Includes `role="status"` and `aria-live="polite"` for message display.
+    *   **Issue:** Failing tests in `App.test.tsx`. The nature of these failures needs further investigation as the current tests don't directly test routing, despite the previous mention of routing-related issues.
+    *   **Suggestion:** Add JSDoc comments.
 
-### Edge Cases
+*   **`src/components/ExcelUploader/ExcelUploader.tsx` Analysis:**
+    *   **Structure:** Functional component using `useState` and `useCallback`.
+    *   **Props:** Accepts `onUploadSuccess` and `onUploadError` callbacks.
+    *   **State:** `isLoading` and `error`.
+    *   **`handleFileChange`:** Handles file selection, validation, parsing, and error handling.
+    *   **Accessibility:** Uses `label`, `aria-label`, `aria-describedby`, `role="region"`, `role="alert"`, and `aria-live="polite"`.
+    *   **Styling:** Uses CSS Modules.
+    *   **Issue:** The tests `handles invalid file type` and `handles parsing errors` in `ExcelUploader.test.tsx` are likely failing. These tests check for both the `onUploadError` callback and the inline error display, but the component only displays the inline error if `onUploadError` is NOT provided.
+    *   **Suggestion:** Add JSDoc comments.
+    *   **Suggestion:** Improve error messages to be more user-friendly.
 
-*   **WorkoutDetails:**
-    *   **Empty program:**  Ensure the component handles the case where the `programId` does not correspond to an existing program in IndexedDB.  It should display an appropriate message to the user (e.g., "Program not found").
-    *   **Program with no workouts:**  Ensure the component handles the case where a program has no workouts defined. It should display a message indicating that there are no workouts for the program.
-    *   **Workout with no exercises:** Ensure the component handles workouts with no exercises.
-    *   **Invalid programId:**  Consider what happens if the `programId` is not a valid UUID.
-*   **WorkoutSession:**
-    *   **No exercises:** Ensure the component handles the case where the workout has no exercises. It should probably display a message and prevent the user from starting a session.
-    *   **Zero working sets:**  Ensure the component handles exercises with `workingSets` set to 0.
-    *   **Invalid input:**  Validate user input for reps, load, and RPE to prevent non-numeric or out-of-range values.
-    *   **Notes with special characters:** Test how notes with special characters (e.g., newlines, quotes) are handled.
-    * **Missing program:** Ensure that if the program is not found in IndexedDB during `handleFinishWorkout`, an appropriate error is handled and displayed to the user.
+*   **`src/components/ProgramList/ProgramList.tsx` Analysis:**
+    *   **Structure:** Functional component using `useState` and `useEffect`.
+    *   **State:** `programs`, `isLoading`, and `error`.
+    *   **`useEffect`:** Fetches workout programs from IndexedDB on mount.
+    *   **Loading/Error/Empty States:** Displays appropriate messages.
+    *   **Program Display:** Iterates through programs and renders a list item for each.
+    *   **Accessibility:** Uses `role` and `aria-label` attributes.
+    *   **Styling:** Uses CSS Modules.
+    *   **Issue:** 2 failing tests related to rendering the program list in `ProgramList.test.tsx`. The specific failing tests need further investigation.
+    *   **Suggestion:** Add JSDoc comments.
 
-### Error Handling
+*   **`src/components/WorkoutDetails/WorkoutDetails.tsx` Analysis:**
+    *   **Structure:** Functional component using `useState` and `useEffect`.
+    *   **Props:** Accepts a `programId` prop.
+    *   **State:** `program`, `isLoading`, and `error`.
+    *   **`useEffect`:** Fetches the workout program from IndexedDB using `getWorkoutProgram` when the `programId` changes.
+    * **Loading/Error/Empty States:** Displays appropriate messages for loading, error, and not found states.
+    * **Workout and Exercise Display:** Uses nested components (`WorkoutComponent` and `ExerciseComponent`) to display details.
+    * **Workout History:** Displays a list of workout sessions from the program's history.
+    *   **Accessibility:** Uses `role` and `aria-label` for various sections and elements.
+    *   **Styling:** Uses CSS Modules.
+    *   **Issue:** Failing tests in `WorkoutDetails.test.tsx`. The specific failing tests need further investigation.
+    *   **Suggestion:** Add JSDoc comments.
+    * **Issue:** As per `.clinerules` and previous analysis, the logic for updating workout history should be in `WorkoutSession`'s `handleFinishWorkout` function, not in `WorkoutDetails`.
 
-*   **WorkoutDetails:**
-    *   The component already handles errors when loading the program.  Ensure that the error message is user-friendly and provides helpful information.
-*   **WorkoutSession:**
-    *   Implement error handling for the `storeWorkoutSession`, `getWorkoutProgram`, and `storeWorkoutProgram` calls within `handleFinishWorkout`.  Display user-friendly error messages if any of these operations fail.
-*   **IndexedDB:**
-    *   Review the `indexedDB.ts` file to ensure that all IndexedDB operations have comprehensive error handling.
+### Recommendations
 
-### User Experience
-
-*   **WorkoutDetails:**
-    *   Consider adding a visual indicator (e.g., a spinner or loading message) while the program is being loaded.
-    *   If there's an error loading the program, provide a clear and informative error message, possibly with a "Retry" button.
-*   **WorkoutSession:**
-    *   Provide clear visual feedback to the user when a set is added or when input values are changed.
-    *   Consider adding a confirmation dialog before finishing the workout to prevent accidental data loss.
-    *   After finishing the workout, consider redirecting the user back to the `WorkoutDetails` view or displaying a success message.
-    *   The "Add Set" button could be disabled if the number of sets added equals the `workingSets` value for the exercise.
-    *   Consider adding input validation to prevent the user from entering invalid values for reps, load, and RPE (e.g., negative numbers, non-numeric values).
-    *   Consider adding a way to edit or delete sets.
-
-</final_file_content>
-
-IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
-
-<environment_details>
-# VSCode Visible Files
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/0
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/1
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/2
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/3
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/4
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/5
-../../response_c49d114d-de54-40e7-8bd6-b622c744d076/6
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/0
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/1
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/2
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/3
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/4
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/5
-../../response_d1e79f07-ddf3-42a5-a896-0200ae6d65ea/6
-memory-bank/activeContext.md
-
-# VSCode Open Tabs
-memory-bank/error-log.md
-memory-bank/activeContext.md
-
-# Current Time
-2/24/2025, 4:52:41 PM (UTC, UTC+0:00)
-
-# Current Mode
-PLAN MODE
-In this mode you should focus on information gathering, asking questions, and architecting a solution. Once you have a plan, use the plan_mode_response tool to engage in a conversational back and forth with the user. Do not use the plan_mode_response tool until you've gathered all the information you need e.g. with read_file or ask_followup_question.
-(Remember: If it seems the user wants you to use tools only available in Act Mode, you should ask the user to "toggle to Act mode" (use those words) - they will have to manually do this themselves with the Plan/Act toggle button below. You do not have the ability to switch to Act Mode yourself, and must wait for the user to do it themselves once they are satisfied with the plan.)
+1.  **Fix Failing Tests:**
+    *   Address the failing tests in `ExcelUploader.test.tsx`, `ProgramList.test.tsx`, and `App.test.tsx`.
+2.  **Move `handleFinishWorkout` Logic:**
+    *   Move the logic for updating the workout program's history from `WorkoutDetails.tsx` to `WorkoutSession.tsx`.
+3.  **Improve Error Messages:**
+    *   Use more generic error messages and provide more context in the console log.
+4.  **Add JSDoc Comments:**
+    *   Add more JSDoc comments to the functions and components.
+5.  **Address Warnings:**
+    *   Address the warnings about deprecated `ReactDOMTestUtils.act` and React Router future flags.
+6.  **Update Dependencies:**
+    *   Update dependencies to address security vulnerabilities and deprecation warnings.

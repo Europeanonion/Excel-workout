@@ -1,27 +1,26 @@
-export interface WorkoutProgram {
-  id: string; // UUID
-  name: string; // User-provided name
-  workouts: Workout[]; // The workout template
-  history: WorkoutSession[]; // Completed workout sessions
+export interface Exercise {
+  name: string;
+  sets: number;
+  reps: string;
+  load: number;
+  rpe: number;
+  rest: number;
+  notes: string | null;
+  substitution1?: string | null;
+  substitution2?: string | null;
 }
 
 export interface Workout {
-  week: string;
-  day: string; // "Push #1", "Pull #2", etc.
+  name: string;
+  day: string; // Add 'day' property
   exercises: Exercise[];
 }
 
-export interface Exercise {
-  name: string;
-  warmupSets: string | number | null | undefined;
-  workingSets: string | number | null | undefined;
-  reps: string | null | undefined;
-  load: string | number | null | undefined;
-  rpe: string | number | null | undefined;
-  rest: string | number | null | undefined;
-  substitution1: string | number | null | undefined;
-  substitution2: string | number | null | undefined;
-  notes: string | number | null | undefined;
+export interface WorkoutProgram {
+  id: string; // UUID
+  name: string; // User-provided name
+  workouts: any[]; // Replace with proper workout type
+  history: any[]; // Replace with proper history type
 }
 
 export interface WorkoutSession {

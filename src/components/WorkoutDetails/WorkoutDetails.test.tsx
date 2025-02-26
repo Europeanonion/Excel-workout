@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor, within, act } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react'; // Added within
+import { act } from '@testing-library/react'; // Correct import for act
 import { WorkoutDetails } from './WorkoutDetails';
 import { getWorkoutProgram } from '../../lib/indexedDB';
 import type { WorkoutProgram } from '../../types';
@@ -24,7 +25,7 @@ const mockWorkoutProgram: WorkoutProgram = {
           rest: 120,
           substitution1: null,
           substitution2: null,
-          notes: null,
+          notes: '', // Changed from null to empty string
         },
       ],
     },
@@ -48,13 +49,18 @@ const mockedGetWorkoutProgram = getWorkoutProgram as jest.MockedFunction<
 
 test('renders loading state', async () => {
   mockedGetWorkoutProgram.mockImplementation(
-    () => new Promise((resolve) => setTimeout(resolve, 50))
+    () => new Promise((resolve) => setTimeout(() => resolve(undefined), 50))
   );
-  await act(() => {
-    render(<WorkoutDetails programId="test-program-id" />);
-  });
+
+  render(<WorkoutDetails programId="test-program-id" />);
+
   expect(screen.getByText(/Loading program.../i)).toBeInTheDocument();
-  await waitFor(() => expect(screen.queryByText(/Loading program.../i)).not.toBeInTheDocument(), {timeout: 100});
+
+  // Fix 2: Use proper waitFor with adequate timeout
+  await waitFor(() =>
+    expect(screen.queryByText(/Loading program.../i)).not.toBeInTheDocument(),
+    { timeout: 200 }
+  );
 });
 
 test('renders error state', async () => {

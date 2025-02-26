@@ -72,7 +72,7 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
       sessionId: uuidv4(),
       programId,
       date: new Date().toISOString(),
-      workoutName: workout.day,
+      workoutName: workout.day, // Use workout.day here
       exercises: completedExercises,
       totalLoad,
       notes: null, // Global notes are not used yet
@@ -111,7 +111,7 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
           <h3>{exercise.name}</h3>
           <div className={styles.setsContainer}>
             <p className={styles.progressIndicator}>
-              Set {completedSets[exercise.name]?.length || 0}/{exercise.workingSets || 0}
+              Set {completedSets[exercise.name]?.length || 0}/{exercise.sets}
             </p>
             {completedSets[exercise.name]?.map((set, index) => (
               <div key={index} className={styles.set}>

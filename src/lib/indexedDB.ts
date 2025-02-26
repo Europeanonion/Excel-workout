@@ -14,37 +14,86 @@ interface WorkoutDB extends DBSchema {
 }
 
 let db: IDBPDatabase<WorkoutDB>;
+let dbPromise: Promise<IDBPDatabase<WorkoutDB>> | null = null;
 
+/**
+ * Initializes the IndexedDB database.
+ * This function should be called before any other database operations.
+ */
 export async function initDB() {
-  db = await openDB<WorkoutDB>('workout-db', 1, {
-    upgrade(db) {
-      db.createObjectStore('workout-programs', { keyPath: 'id' });
-      const sessionStore = db.createObjectStore('workout-sessions', { keyPath: 'sessionId' });
-      sessionStore.createIndex('programId', 'programId');
-    },
-  });
+  if (!dbPromise) {
+    dbPromise = openDB<WorkoutDB>('workout-db', 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('workout-programs')) {
+          db.createObjectStore('workout-programs', { keyPath: 'id' });
+        }
+        
+        if (!db.objectStoreNames.contains('workout-sessions')) {
+          const sessionStore = db.createObjectStore('workout-sessions', { keyPath: 'sessionId' });
+          sessionStore.createIndex('programId', 'programId');
+        }
+      },
+    });
+  }
+  
+  db = await dbPromise;
+  return db;
 }
 
+/**
+ * Ensures the database is initialized before performing operations.
+ */
+async function ensureDB() {
+  if (!db) {
+    await initDB();
+  }
+  return db;
+}
+
+/**
+ * Stores a workout program in the database.
+ */
 export async function storeWorkoutProgram(program: WorkoutProgram): Promise<void> {
-  await db.put('workout-programs', program);
+  const database = await ensureDB();
+  await database.put('workout-programs', program);
 }
 
+/**
+ * Retrieves a workout program by ID.
+ */
 export async function getWorkoutProgram(id: string): Promise<WorkoutProgram | undefined> {
-  return await db.get('workout-programs', id);
+  const database = await ensureDB();
+  return await database.get('workout-programs', id);
 }
 
+/**
+ * Retrieves all workout programs.
+ */
 export async function getAllWorkoutPrograms(): Promise<WorkoutProgram[]> {
-  return await db.getAll('workout-programs');
+  const database = await ensureDB();
+  return await database.getAll('workout-programs');
 }
 
+/**
+ * Deletes a workout program by ID.
+ */
 export async function deleteWorkoutProgram(id: string): Promise<void> {
-  await db.delete('workout-programs', id);
+  const database = await ensureDB();
+  await database.delete('workout-programs', id);
 }
 
+/**
+ * Stores a workout session in the database.
+ */
 export async function storeWorkoutSession(session: WorkoutSession): Promise<void> {
-    await db.put('workout-sessions', session);
+  const database = await ensureDB();
+  await database.put('workout-sessions', session);
 }
       
+/**
+ * Retrieves all workout sessions for a specific program.
+ */
 export async function getWorkoutSessions(programId: string): Promise<WorkoutSession[]> {
-    return await db.getAllFromIndex('workout-sessions', 'programId', programId);
+  const database = await ensureDB();
+  return await database.getAllFromIndex('workout-sessions', 'programId', programId);
 }

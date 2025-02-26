@@ -108,7 +108,7 @@ describe('ProgramList', () => {
             expect(screen.getByText('Test Program 1')).toBeInTheDocument();
             expect(screen.getByText('Test Program 2')).toBeInTheDocument();
 
-            expect(screen.getByText('1 workouts')).toBeInTheDocument();
+            expect(screen.getAllByText('1 workouts').length).toBe(2);
 
             const completedSessions = screen.getAllByText(/Completed:/);
             expect(completedSessions[0].nextSibling).toHaveTextContent('1 sessions');

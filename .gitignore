@@ -17,3 +17,34 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+service-account-key.json
+
+# Google Cloud SDK
+google-cloud-cli-*.tar.gz
+google-cloud-sdk/
+.config/gcloud/
+*.json
+!package.json
+
+# Python
+__pycache__/
+*.pyc
+.python-version
+*.egg-info/
+dist/
+build/
+
+# AI Model Testing
+test_results/
+model_outputs/
+
+# Editor settings
+.vscode
+
+# Custom folders and files
+/memory-bank
+.windsurfrules
+.clinerules-debug
+.clinerules-code
+.clinerules-ask
+.clinerules-code

@@ -49,11 +49,7 @@ export const WorkoutDetails: React.FC<Props> = ({ programId }) => {
         }
       } catch (err) {
         setError('Failed to load workout program. Please try again later.');
-        if (err instanceof Error) {
-            console.error('Error loading program:', err.message);
-        } else {
-            console.error('Error loading program:', err);
-        }
+        console.error('Error loading program:', err instanceof Error ? err.message : err);
       } finally {
         setIsLoading(false);
       }

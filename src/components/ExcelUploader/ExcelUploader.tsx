@@ -7,6 +7,10 @@ interface ExcelUploaderProps {
   onUploadError?: (error: Error) => void;
 }
 
+/**
+ * Component for uploading Excel files containing workout programs.
+ * Handles file validation, parsing, and error handling.
+ */
 export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
   onUploadSuccess,
   onUploadError
@@ -39,8 +43,14 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
     } catch (err) {
       // Extract error message
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
+      
+      // Always set the error state for display
       setError(message);
-      onUploadError?.(err instanceof Error ? err : new Error(message));
+      
+      // Call the error callback if provided
+      if (onUploadError) {
+        onUploadError(err instanceof Error ? err : new Error(message));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +73,8 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
         </span>
       </label>
       
-      {error && !onUploadError && (
-        <div 
+      {error && (
+        <div
           id="upload-error"
           className={styles.error}
           role="alert"

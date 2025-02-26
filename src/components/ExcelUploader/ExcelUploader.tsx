@@ -57,7 +57,7 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
   }, [onUploadSuccess, onUploadError]);
 
   return (
-    <div className={styles.container} role="region" aria-label="Excel file upload">
+    <div className={styles.container}>
       <label className={styles.uploadLabel}>
         <input
           type="file"

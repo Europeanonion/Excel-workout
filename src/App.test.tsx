@@ -16,10 +16,15 @@ jest.mock('./features/excelParsing/excelParser', () => ({
 
 const mockPrograms: WorkoutProgram[] = [];
 
-jest.mock('./lib/indexedDB', () => ({
-  getAllWorkoutPrograms: jest.fn(() => Promise.resolve(mockPrograms)),
-  initDB: jest.fn(() => Promise.resolve()),
-}));
+// Mock the indexedDB module
+jest.mock('./lib/indexedDB', () => {
+  const originalModule = jest.requireActual('./lib/indexedDB');
+  return {
+    ...originalModule,
+    getAllWorkoutPrograms: jest.fn(() => Promise.resolve(mockPrograms)),
+    initDB: jest.fn(() => Promise.resolve()),
+  };
+});
 
 // Helper function to render with Router
 const renderWithRouter = (component: React.ReactElement) => {
@@ -37,16 +42,25 @@ describe('App', () => {
   });
 
   it('renders header and both components', async () => {
+    // Force the initDB mock to resolve immediately
+    const initDBMock = jest.requireMock('./lib/indexedDB').initDB;
+    initDBMock.mockImplementation(() => Promise.resolve());
+    
     renderWithRouter(<AppContent />);
+
+    // Wait for initialization to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Initializing application...')).not.toBeInTheDocument();
+    });
+
+    // Header
+    expect(screen.getByText('Excel Workout PWA')).toBeInTheDocument();
+    expect(screen.getByText('Track and manage your workout programs')).toBeInTheDocument();
 
     // Wait for loading to complete
     await waitFor(() => {
       expect(screen.queryByText('Loading programs...')).not.toBeInTheDocument();
     });
-
-    // Header
-    expect(await screen.findByText('Excel Workout PWA')).toBeInTheDocument();
-    expect(screen.getByText('Track and manage your workout programs')).toBeInTheDocument();
 
     // Upload section
     expect(screen.getByLabelText('Choose Excel file')).toBeInTheDocument();
@@ -66,6 +80,10 @@ describe('App', () => {
       history: [],
     };
 
+    // Force the initDB mock to resolve immediately
+    const initDBMock = jest.requireMock('./lib/indexedDB').initDB;
+    initDBMock.mockImplementation(() => Promise.resolve());
+
     // First return empty array, then return with the new program
     (getAllWorkoutPrograms as jest.Mock)
       .mockResolvedValueOnce([])
@@ -73,6 +91,11 @@ describe('App', () => {
     (parseExcelFile as jest.Mock).mockResolvedValue([]);
 
     renderWithRouter(<AppContent />);
+
+    // Wait for initialization to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Initializing application...')).not.toBeInTheDocument();
+    });
 
     // Wait for initial load
     await waitFor(() => {
@@ -105,10 +128,20 @@ describe('App', () => {
 
   it('shows error message when upload fails', async () => {
     const errorMessage = 'Failed to parse Excel file';
+    
+    // Force the initDB mock to resolve immediately
+    const initDBMock = jest.requireMock('./lib/indexedDB').initDB;
+    initDBMock.mockImplementation(() => Promise.resolve());
+    
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
     (parseExcelFile as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
     renderWithRouter(<AppContent />);
+
+    // Wait for initialization to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Initializing application...')).not.toBeInTheDocument();
+    });
 
     // Wait for initial load
     await waitFor(() => {
@@ -122,17 +155,27 @@ describe('App', () => {
 
     fireEvent.change(input, { target: { files: [file] } });
 
+    // Use getAllByText to handle multiple elements with the same text
     await waitFor(() => {
-      const errorElement = screen.getByText(errorMessage);
-      expect(errorElement).toBeInTheDocument();
+      const errorElements = screen.getAllByText(errorMessage);
+      expect(errorElements.length).toBeGreaterThan(0);
     });
   });
 
   it('maintains proper section structure and accessibility', async () => {
     // Mock empty programs list
     (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
+    
+    // Force the initDB mock to resolve immediately
+    const initDBMock = jest.requireMock('./lib/indexedDB').initDB;
+    initDBMock.mockImplementation(() => Promise.resolve());
 
     renderWithRouter(<AppContent />);
+
+    // Wait for initialization to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Initializing application...')).not.toBeInTheDocument();
+    });
 
     // Wait for loading state to resolve
     await waitFor(() => {

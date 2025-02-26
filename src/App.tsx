@@ -119,13 +119,13 @@ export function AppContent() {
           {isLoading ? (
             <p>Loading programs...</p>
           ) : (
-            programs.length === 0 ? (
+            !programs || programs.length === 0 ? (
               <>
                 <p>No workout programs found.</p>
                 <p>Upload an Excel file to get started.</p>
               </>
             ) : (
-              <ProgramList key={refreshTrigger} />
+              <ProgramList key={`program-list-${refreshTrigger}`} programs={programs} />
             )
           )}
         </section>

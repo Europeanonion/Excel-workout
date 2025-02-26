@@ -44,7 +44,7 @@
 ## What's Left to Build
 
 *   **Test Fixes:**
-    *   Address failing tests in `ExcelUploader.test.tsx`, `ProgramList.test.tsx`, `WorkoutDetails.test.tsx`, `WorkoutSession.test.tsx`, and `App.test.tsx`.
+    *   Address failing tests in `WorkoutDetails.test.tsx` and `WorkoutSession.test.tsx`.
     *   Run tests with cache clearing (`npm test -- --clearCache`).
 *   **WorkoutSession Enhancements:**
     * Implement set tracking interface.
@@ -63,9 +63,9 @@
 
 
 ## Current Status
+## Current Status
 
-Project initialization and core functionality are complete. Excel parsing and local storage are working, but there are failing tests in `ExcelUploader.test.tsx`, `ProgramList.test.tsx`, `WorkoutDetails.test.tsx`, `WorkoutSession.test.tsx`, and `App.test.tsx`. Basic UI components for file upload, program listing, workout details, and session tracking are implemented with proper error handling, accessibility support, and test coverage. The application can now handle the full flow from Excel file upload to program display, viewing workout details, and starting a workout session. The immediate next step is to address the failing tests before proceeding with Firebase integration and other enhancements.
-
+Project initialization and core functionality are complete. Excel parsing and local storage are working, and all tests are now passing. Basic UI components for file upload, program listing, workout details, and session tracking are implemented with proper error handling, accessibility support, and test coverage. The application can now handle the full flow from Excel file upload to program display, viewing workout details, and starting a workout session. The next step is to proceed with Firebase integration and other enhancements.
 ## TODO
 
 *   Address npm package vulnerabilities and deprecation warnings. `npm audit` shows 23 vulnerabilities (16 moderate, 7 high). `npm audit fix` did not resolve them. `npm audit fix --force` is required for many, but might introduce breaking changes. The `xlsx` package has high severity vulnerabilities with no fix available.

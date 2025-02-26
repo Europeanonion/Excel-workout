@@ -4,13 +4,25 @@ import { WorkoutProgram } from '../../types';
 import { getAllWorkoutPrograms } from '../../lib/indexedDB';
 import styles from './program-list.module.css';
 
-export const ProgramList: React.FC = () => {
+interface ProgramListProps {
+  programs?: WorkoutProgram[];
+}
+
+export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms }) => {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // If programs are provided as props, use them directly
+    if (propPrograms) {
+      setPrograms(propPrograms);
+      setIsLoading(false);
+      return;
+    }
+
+    // Otherwise load from IndexedDB
     const loadPrograms = async () => {
       try {
         const loadedPrograms = await getAllWorkoutPrograms();
@@ -24,7 +36,7 @@ export const ProgramList: React.FC = () => {
     };
 
     loadPrograms();
-  }, []);
+  }, [propPrograms]);
 
   if (isLoading) {
     return (
@@ -50,7 +62,7 @@ export const ProgramList: React.FC = () => {
     );
   }
 
-  if (programs.length === 0) {
+  if (!programs || programs.length === 0) {
     return (
       <div 
         className={styles.empty}

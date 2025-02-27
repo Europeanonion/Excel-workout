@@ -1,3 +1,4 @@
+
 export interface Exercise {
   name: string;
   sets: number;
@@ -8,19 +9,25 @@ export interface Exercise {
   notes: string | null;
   substitution1?: string | null;
   substitution2?: string | null;
+  warmupSets?: number;
+  workingSets?: number;
 }
 
 export interface Workout {
   name: string;
-  day: string; // Add 'day' property
+  day: string;
+  week?: string; // Optional week property
   exercises: Exercise[];
 }
 
 export interface WorkoutProgram {
   id: string; // UUID
   name: string; // User-provided name
-  workouts: any[]; // Replace with proper workout type
+  workouts: Workout[]; // Array of workouts
   history: any[]; // Replace with proper history type
+  userId?: string; // Firebase user ID (optional for local-only programs)
+  createdAt?: any; // Timestamp for creation date
+  updatedAt?: any; // Timestamp for last update
 }
 
 export interface WorkoutSession {

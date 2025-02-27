@@ -17,6 +17,7 @@ describe('ProgramList', () => {
       name: 'Test Program 1',
       workouts: [
         {
+          name: 'Push #1',
           week: 'Week 1',
           day: 'Push #1',
           exercises: [],
@@ -39,6 +40,7 @@ describe('ProgramList', () => {
       name: 'Test Program 2',
       workouts: [
         {
+          name: 'Pull #1',
           week: 'Week 1',
           day: 'Pull #1',
           exercises: [],

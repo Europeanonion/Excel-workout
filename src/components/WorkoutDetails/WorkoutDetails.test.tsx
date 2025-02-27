@@ -12,11 +12,13 @@ const mockWorkoutProgram: WorkoutProgram = {
   name: 'Test Program',
   workouts: [
     {
+      name: 'Push',
       week: '1',
       day: 'Push',
       exercises: [
         {
           name: 'Bench Press',
+          sets: 5, // Total sets (warmup + working)
           warmupSets: 2,
           workingSets: 3,
           reps: '8-12',

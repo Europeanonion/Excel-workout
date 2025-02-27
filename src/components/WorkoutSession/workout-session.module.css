@@ -1,72 +1,379 @@
 .container {
-    border: 1px solid #ccc;
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .exerciseContainer {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    border: 1px solid #eee;
-    border-radius: 4px;
-  }
-  
-  .setsContainer {
-    margin-top: 1rem;
-  }
-  
-  .set {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-  
-  .setNumber {
-    margin-right: 1rem;
-    font-weight: bold;
-  }
-  
-  .inputLabel {
-    margin-right: 1rem;
-    display: flex;
-    align-items: center;
-  }
-  
-  .inputField {
-    margin-left: 0.5rem;
-    padding: 0.25rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 50px; /* Adjust as needed */
-  }
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-  .textareaField {
-    margin-left: 0.5rem;
-    padding: 0.25rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 100%;
-    min-height: 60px;
-  }
-  
-  .addSetButton {
-    margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .addSetButton:hover {
-    background-color: #0056b3;
-  }
+.exerciseContainer {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
 
-  .notesContainer {
-    margin-top: 1rem;
-  }
+.exerciseContainer:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
 
-  .noSets {
-    color: #888;
+.exerciseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.setsContainer {
+  margin-top: 1rem;
+}
+
+.set {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.set:hover {
+  background-color: #eef5ff;
+  border-color: #d1e6ff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.completedSet {
+  background-color: #e6f7e6;
+  border-color: #c8e6c9;
+}
+
+.completedSet:hover {
+  background-color: #d4f5d6;
+  border-color: #a5d6a7;
+}
+
+.setDragging {
+  opacity: 0.7;
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.setNumber {
+  margin-right: 1rem;
+  font-weight: bold;
+  min-width: 60px;
+}
+
+.setControls {
+  display: flex;
+  margin-left: auto;
+}
+
+.setControlButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #666;
+  margin-left: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.setControlButton:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.inputLabel {
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.inputField {
+  margin-left: 0.5rem;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 50px;
+  transition: border-color 0.2s ease;
+}
+
+.inputField:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.textareaField {
+  margin-left: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  min-height: 60px;
+  transition: border-color 0.2s ease;
+}
+
+.textareaField:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.addSetButton {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addSetButton:hover {
+  background-color: #0056b3;
+}
+
+.notesContainer {
+  margin-top: 1rem;
+}
+
+.noSets {
+  color: #888;
+  padding: 1rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.progressContainer {
+  margin: 1rem 0;
+}
+
+.progressBar {
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
+  animation: progressAnimation 1s linear infinite;
+}
+
+@keyframes progressAnimation {
+  from {
+    background-position: 1rem 0;
   }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.progressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.workoutProgressContainer {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  border: 1px solid #d1e6ff;
+}
+
+.workoutProgressBar {
+  height: 12px;
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.workoutProgressFill {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 1rem 1rem;
+  animation: progressAnimation 1s linear infinite;
+}
+
+.workoutProgressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.timerContainer {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  border: 1px solid #d1e6ff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  animation: timerPulse 2s infinite ease-in-out;
+}
+
+@keyframes timerPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.timerDisplay {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-right: 1rem;
+  font-family: monospace;
+  min-width: 80px;
+}
+
+.timerControls {
+  display: flex;
+  margin-left: auto;
+}
+
+.timerButton {
+  padding: 0.5rem 0.75rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timerButton:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timerButton:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.timerButton.stop {
+  background-color: #dc3545;
+}
+
+.timerButton.stop:hover {
+  background-color: #c82333;
+}
+
+.timerButton.reset {
+  background-color: #6c757d;
+}
+
+.timerButton.reset:hover {
+  background-color: #5a6268;
+}
+
+.timerButton.start {
+  background-color: #007bff;
+}
+
+.timerButton.start:hover {
+  background-color: #0069d9;
+}
+
+.timerSettings {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.timerSettingsLabel {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.timerSettingsInput {
+  width: 60px;
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 1rem;
+}
+
+.finishButton {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.finishButton:hover {
+  background-color: #218838;
+}
+
+.sessionNotesContainer {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.sessionNotesLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.completionMessage {
+  text-align: center;
+  padding: 2rem;
+  background-color: #e6f7e6;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-weight: bold;
+  color: #28a745;
+}

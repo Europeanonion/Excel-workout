@@ -1,228 +1,37 @@
-PASS src/components/ProgramList/ProgramList.test.tsx
-  ● Console
+  console.error
+    Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
 
-    console.error
-      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
-
-      58 |     );
-      59 |
-    > 60 |     render(
-         |           ^
-      61 |     <MemoryRouter>
-      62 |         <ProgramList />
-      63 |     </MemoryRouter>);
+      49 |
+      50 |   it('renders workout session component', async () => {
+    > 51 |       await act(async () => {
+         |                ^
+      52 |           render(<WorkoutSession workout={mockWorkout} programId={programId} />);
+      53 |       });
+      54 |     expect(screen.getByText(/Workout Session: Push/i)).toBeInTheDocument();
 
       at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
       at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
       at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
       at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at Object.<anonymous> (src/components/ProgramList/ProgramList.test.tsx:60:11)
+      at Object.<anonymous> (src/components/WorkoutSession/WorkoutSession.test.tsx:51:16)
+      at TestScheduler.scheduleTests (node_modules/@jest/core/build/TestScheduler.js:333:13)
+      at runJest (node_modules/@jest/core/build/runJest.js:404:19)
 
-    console.warn
-      ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+PASS src/components/WorkoutSession/WorkoutSession.test.tsx
+  WorkoutSession
+    ✓ renders workout session component (74 ms)
+    ✓ adds a set when Add Set button is clicked (65 ms)
+    ✓ updates reps value when input changes (29 ms)
+    ✓ updates load value when input changes (25 ms)
+    ✓ updates RPE value when input changes (25 ms)
+    ✓ renders Finish Workout button (12 ms)
+    ✓ calls storeWorkoutSession when Finish Workout is clicked (20 ms)
+    ✓ updates program history in IndexedDB when Finish Workout is clicked (60 ms)
+    ✓ updates and stores notes correctly (23 ms)
 
-      58 |     );
-      59 |
-    > 60 |     render(
-         |           ^
-      61 |     <MemoryRouter>
-      62 |         <ProgramList />
-      63 |     </MemoryRouter>);
-
-      at warnOnce (node_modules/react-router/lib/deprecations.ts:9:13)
-      at logDeprecation (node_modules/react-router/lib/deprecations.ts:14:3)
-      at logV6DeprecationWarnings (node_modules/react-router/lib/deprecations.ts:26:5)
-      at node_modules/react-router/lib/components.tsx:257:25
-      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
-      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
-      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
-      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
-      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
-      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
-      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
-      at node_modules/react-dom/cjs/react-dom.development.js:26808:9
-      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
-      at act (node_modules/react/cjs/react.development.js:2582:11)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at Object.<anonymous> (src/components/ProgramList/ProgramList.test.tsx:60:11)
-
-    console.warn
-      ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
-
-      58 |     );
-      59 |
-    > 60 |     render(
-         |           ^
-      61 |     <MemoryRouter>
-      62 |         <ProgramList />
-      63 |     </MemoryRouter>);
-
-      at warnOnce (node_modules/react-router/lib/deprecations.ts:9:13)
-      at logDeprecation (node_modules/react-router/lib/deprecations.ts:14:3)
-      at logV6DeprecationWarnings (node_modules/react-router/lib/deprecations.ts:37:5)
-      at node_modules/react-router/lib/components.tsx:257:25
-      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
-      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
-      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
-      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
-      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
-      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
-      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
-      at node_modules/react-dom/cjs/react-dom.development.js:26808:9
-      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
-      at act (node_modules/react/cjs/react.development.js:2582:11)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at Object.<anonymous> (src/components/ProgramList/ProgramList.test.tsx:60:11)
-
-    console.error
-      Error loading programs: Error: Failed to load programs
-          at Object.<anonymous> (/workspaces/Excel-workout/src/components/ProgramList/ProgramList.test.tsx:70:19)
-          at Promise.then.completed (/workspaces/Excel-workout/node_modules/jest-circus/build/utils.js:391:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/workspaces/Excel-workout/node_modules/jest-circus/build/utils.js:316:10)
-          at _callCircusTest (/workspaces/Excel-workout/node_modules/jest-circus/build/run.js:218:40)
-          at processTicksAndRejections (node:internal/process/task_queues:95:5)
-          at _runTest (/workspaces/Excel-workout/node_modules/jest-circus/build/run.js:155:3)
-          at _runTestsForDescribeBlock (/workspaces/Excel-workout/node_modules/jest-circus/build/run.js:66:9)
-          at _runTestsForDescribeBlock (/workspaces/Excel-workout/node_modules/jest-circus/build/run.js:60:9)
-          at run (/workspaces/Excel-workout/node_modules/jest-circus/build/run.js:25:3)
-          at runAndTransformResultsToJestFormat (/workspaces/Excel-workout/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-          at jestAdapter (/workspaces/Excel-workout/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-          at runTestInternal (/workspaces/Excel-workout/node_modules/jest-runner/build/runTest.js:389:16)
-          at runTest (/workspaces/Excel-workout/node_modules/jest-runner/build/runTest.js:475:34)
-          at Object.worker (/workspaces/Excel-workout/node_modules/jest-runner/build/testWorker.js:133:12)
-
-      30 |       } catch (err) {
-      31 |         setError('Failed to load workout programs. Please try again later.');
-    > 32 |         console.error('Error loading programs:', err);
-         |                 ^
-      33 |       } finally {
-      34 |         setIsLoading(false);
-      35 |       }
-
-      at loadPrograms (src/components/ProgramList/ProgramList.tsx:32:17)
-
-PASS src/App.test.tsx
-  ● Console
-
-    console.error
-      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
-
-      29 | // Helper function to render with Router
-      30 | const renderWithRouter = (component: React.ReactElement) => {
-    > 31 |   return render(
-         |                ^
-      32 |     <MemoryRouter>
-      33 |       {component}
-      34 |     </MemoryRouter>
-
-      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
-      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at renderWithRouter (src/App.test.tsx:31:16)
-      at Object.<anonymous> (src/App.test.tsx:49:5)
-
-    console.warn
-      ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
-
-      29 | // Helper function to render with Router
-      30 | const renderWithRouter = (component: React.ReactElement) => {
-    > 31 |   return render(
-         |                ^
-      32 |     <MemoryRouter>
-      33 |       {component}
-      34 |     </MemoryRouter>
-
-      at warnOnce (node_modules/react-router/lib/deprecations.ts:9:13)
-      at logDeprecation (node_modules/react-router/lib/deprecations.ts:14:3)
-      at logV6DeprecationWarnings (node_modules/react-router/lib/deprecations.ts:26:5)
-      at node_modules/react-router/lib/components.tsx:257:25
-      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
-      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
-      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
-      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
-      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
-      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
-      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
-      at node_modules/react-dom/cjs/react-dom.development.js:26808:9
-      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
-      at act (node_modules/react/cjs/react.development.js:2582:11)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at renderWithRouter (src/App.test.tsx:31:16)
-      at Object.<anonymous> (src/App.test.tsx:49:5)
-
-    console.warn
-      ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
-
-      29 | // Helper function to render with Router
-      30 | const renderWithRouter = (component: React.ReactElement) => {
-    > 31 |   return render(
-         |                ^
-      32 |     <MemoryRouter>
-      33 |       {component}
-      34 |     </MemoryRouter>
-
-      at warnOnce (node_modules/react-router/lib/deprecations.ts:9:13)
-      at logDeprecation (node_modules/react-router/lib/deprecations.ts:14:3)
-      at logV6DeprecationWarnings (node_modules/react-router/lib/deprecations.ts:37:5)
-      at node_modules/react-router/lib/components.tsx:257:25
-      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
-      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
-      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
-      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
-      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
-      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
-      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
-      at node_modules/react-dom/cjs/react-dom.development.js:26808:9
-      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
-      at act (node_modules/react/cjs/react.development.js:2582:11)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at renderWithRouter (src/App.test.tsx:31:16)
-      at Object.<anonymous> (src/App.test.tsx:49:5)
-
-PASS src/components/ExcelUploader/ExcelUploader.test.tsx
-  ● Console
-
-    console.error
-      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
-
-      17 |
-      18 |   it('renders upload button and help text', () => {
-    > 19 |     render(<ExcelUploader onUploadSuccess={() => {}} onUploadError={() => {}} />);
-         |           ^
-      20 |     expect(screen.getByLabelText('Choose Excel file')).toBeInTheDocument();
-      21 |     expect(screen.getByText('Choose Excel File')).toBeInTheDocument();
-      22 |     expect(screen.getByText('Supported formats: .xlsx, .xls')).toBeInTheDocument();
-
-      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
-      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
-      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
-      at node_modules/@testing-library/react/dist/act-compat.js:63:25
-      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
-      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
-      at Object.<anonymous> (src/components/ExcelUploader/ExcelUploader.test.tsx:19:11)
-
-
-Test Suites: 3 passed, 3 total
-Tests:       17 passed, 17 total
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
 Snapshots:   0 total
-Time:        2.241 s
-Ran all test suites related to changed files.
+Time:        1.122 s
+Ran all test suites matching /WorkoutSession.test.tsx/i.
 

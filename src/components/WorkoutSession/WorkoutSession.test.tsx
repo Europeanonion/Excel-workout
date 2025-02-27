@@ -8,6 +8,7 @@ import * as idb from '../../lib/indexedDB';
 const mockWorkout: Workout = {
   name: 'Push', // Changed from 'day' to 'name'
   day: 'Push', // Add day property
+  week: 'Week 1', // Add week property
   exercises: [
     {
       name: 'Bench Press',

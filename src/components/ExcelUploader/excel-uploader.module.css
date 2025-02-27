@@ -3,13 +3,77 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  max-width: 400px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
-.uploadLabel {
-  display: block;
+.uploaderCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dropZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.dragging .dropZone {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.resetButton, .templateButton {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.resetButton {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #495057;
+}
+
+.templateButton {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  color: #495057;
+}
+
+.resetButton:hover, .templateButton:hover {
+  background-color: #e2e6ea;
+}
+
+.resetButton:disabled, .templateButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 /* Hide the default file input but keep it accessible */
@@ -22,7 +86,7 @@
   z-index: -1;
 }
 
-.uploadButton {
+.fileLabel {
   display: inline-block;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
@@ -34,23 +98,28 @@
   transition: background-color 0.2s, transform 0.1s;
   text-align: center;
   width: 100%;
+  cursor: pointer;
 }
 
-.uploadButton:hover {
+.fileLabel:hover {
   background-color: #0056b3;
 }
 
-.uploadButton:focus-within {
+.fileLabel:focus-within {
   outline: 2px solid #0056b3;
   outline-offset: 2px;
 }
 
 /* Style for disabled state */
-.fileInput:disabled + .uploadButton {
+.fileInput:disabled + .fileLabel {
   background-color: #6c757d;
   border-color: #5a6268;
   cursor: not-allowed;
   opacity: 0.65;
+}
+
+.status {
+  margin-top: 1rem;
 }
 
 .error {
@@ -59,8 +128,55 @@
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   padding: 0.75rem;
-  margin-top: 0.5rem;
   font-size: 0.875rem;
+}
+
+.success {
+  color: #28a745;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.loading {
+  color: #0056b3;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.loadingContainer {
+  text-align: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progressIndicator {
+  height: 100%;
+  width: 50%; /* This would be dynamic in a real implementation */
+  background-color: #007bff;
+  border-radius: 4px;
+  animation: progress 2s infinite;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 .helpText {
@@ -71,23 +187,27 @@
 }
 
 /* Focus styles for keyboard navigation */
-.fileInput:focus + .uploadButton {
+.fileInput:focus + .fileLabel {
   outline: 2px solid #0056b3;
   outline-offset: 2px;
 }
 
 /* Active state */
-.uploadButton:active {
+.fileLabel:active {
   transform: translateY(1px);
 }
 
 /* High contrast mode support */
 @media (forced-colors: active) {
-  .uploadButton {
+  .fileLabel, .resetButton, .templateButton {
     border: 2px solid ButtonText;
   }
   
-  .error {
+  .error, .success {
     border: 1px solid ButtonText;
+  }
+  
+  .dropZone {
+    border: 2px dashed ButtonText;
   }
 }

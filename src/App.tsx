@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { ExcelUploader } from './components/ExcelUploader';
 import { ProgramList } from './components/ProgramList';
 import { WorkoutDetails } from './components/WorkoutDetails';
@@ -70,11 +70,6 @@ export function AppContent() {
     setMessageType('error');
   }, []);
 
-  const WorkoutDetailsWrapper = () => {
-    const { programId } = useParams<{ programId: string }>();
-    return <WorkoutDetails programId={programId || ''} />;
-  };
-
   // Show loading state while DB is initializing
   if (!dbInitialized) {
     return (
@@ -139,12 +134,10 @@ export function AppContent() {
  */
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppContent />} />
-        <Route path="/program/:programId" element={<WorkoutDetailsWrapper />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<AppContent />} />
+      <Route path="/program/:programId" element={<WorkoutDetailsWrapper />} />
+    </Routes>
   );
 }
 

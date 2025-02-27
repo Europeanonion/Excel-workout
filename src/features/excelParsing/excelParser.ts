@@ -1,4 +1,5 @@
 import * as ExcelJS from 'exceljs';
+import { v4 as uuidv4 } from 'uuid';
 import { Exercise, WorkoutProgram } from '../../types';
 
 export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
@@ -9,7 +10,7 @@ export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
     
     const worksheet = workbook.getWorksheet(1);
     if (!worksheet || worksheet.rowCount < 2) {
-      throw new Error('Invalid Excel file format');
+      throw new Error('Invalid Excel file format. The file appears to be empty or improperly formatted.');
     }
 
     // Get program name from cell B1
@@ -20,11 +21,10 @@ export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
     const requiredColumns = ['Workout', 'Exercise', 'Sets', 'Reps', 'Load', 'RPE', 'Rest'];
     const headerValues = headerRow.values as (string | undefined)[];
     
-    requiredColumns.forEach(column => {
-      if (!headerValues.includes(column)) {
-        throw new Error('Missing required columns');
-      }
-    });
+    const missingColumns = requiredColumns.filter(column => !headerValues.includes(column));
+    if (missingColumns.length > 0) {
+      throw new Error(`Missing required columns: ${missingColumns.join(', ')}. Please ensure your file has all required columns.`);
+    }
 
     // Parse workouts
     const workouts: any[] = [];
@@ -44,7 +44,7 @@ export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
       };
 
       if (isNaN(exercise.sets)) {
-        throw new Error('Invalid data type');
+        throw new Error('Invalid data type detected. Please ensure all numeric fields contain valid numbers.');
       }
 
       const workoutName = row.getCell(1).value?.toString();
@@ -62,13 +62,16 @@ export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
     });
 
     return {
-      id: 'some-uuid', // You might want to generate this properly
+      id: uuidv4(),
       name: programName,
       workouts,
       history: []
     };
 
   } catch (error) {
-    throw error;
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('An unexpected error occurred while parsing the Excel file.');
   }
 }

@@ -53,7 +53,7 @@ describe('WorkoutSession', () => {
       });
     expect(screen.getByText(/Workout Session: Push/i)).toBeInTheDocument();
     expect(screen.getByText(/Bench Press/i)).toBeInTheDocument();
-    expect(screen.getByText(/Set 0\/3/i)).toBeInTheDocument(); // Check for initial progress indicator
+    expect(screen.getByText(/Sets: 0\/3/i)).toBeInTheDocument(); // Updated to match new progress indicator format
     expect(screen.getByLabelText(/Notes for Bench Press/i)).toBeInTheDocument(); // Check for notes textarea
   });
 
@@ -66,7 +66,8 @@ describe('WorkoutSession', () => {
           fireEvent.click(addButton);
       });
     expect(screen.getByText(/Set 1:/i)).toBeInTheDocument();
-    expect(screen.getByText(/Set 1\/3/i)).toBeInTheDocument(); // Check progress indicator after adding a set
+    // Updated to match new progress indicator format - still shows 0/3 because the set isn't complete yet
+    expect(screen.getByText(/Sets: 0\/3/i)).toBeInTheDocument();
   });
 
   it('updates reps value when input changes', async() => {

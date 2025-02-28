@@ -4,6 +4,14 @@ import * as Papa from 'papaparse';
 import { Exercise, WorkoutProgram, Workout } from '../../types';
 
 /**
+ * UUID generation for workout programs
+ * @returns A unique identifier string
+ */
+const generateUUID = (): string => {
+  return uuidv4();
+};
+
+/**
  * Parses an Excel or CSV file containing workout program data.
  * @param file The file to parse
  * @returns A WorkoutProgram object
@@ -117,7 +125,7 @@ async function parseExcelWorkbook(file: File): Promise<WorkoutProgram> {
   }
 
   return {
-    id: uuidv4(), // Generate unique ID
+    id: generateUUID(), // Generate unique ID
     name: programName,
     workouts,
     history: []
@@ -211,7 +219,7 @@ async function parseCSVFile(file: File): Promise<WorkoutProgram> {
           }));
 
           resolve({
-            id: uuidv4(),
+            id: generateUUID(),
             name: programName,
             workouts,
             history: []

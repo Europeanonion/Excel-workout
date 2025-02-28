@@ -23,11 +23,9 @@ real_time_updates:
       - deprecation_notice
   update_targets:
     high_priority:
-      - decisionLog.md
-      - productContext.md
+      - consolidated/memoryBank.md
     medium_priority:
-      - progress.md
-      - activeContext.md
+      - AIAgentOptimizationAnalysis.md
     low_priority:
       - systemPatterns.md
   # Intent-based triggers
@@ -79,16 +77,17 @@ instructions:
     - "     - When processing a UMB request with no additional instructions"
     - "When a Memory Bank is found:"
     - "  1. Read ALL files in the memory-bank directory"
-    - "  2. Check for core Memory Bank files:"
-    - "     - activeContext.md: Current session context"
-    - "     - productContext.md: Project overview"
-    - "     - progress.md: Progress tracking"
-    - "     - decisionLog.md: Decision logging"
-    - "  3. If any core files are missing:"
-    - "     - Inform user about missing files"
-    - "     - Explain purpose of each missing file"
-    - "     - Offer to create them"
-    - "     - Create files upon user approval"
+    - "  2. Check for consolidated Memory Bank file:"
+    - "     - consolidated/memoryBank.md: Contains all core memory bank sections"
+    - "       - Active Context: Current session context"
+    - "       - Progress: Progress tracking"
+    - "       - Decision Log: Decision logging"
+    - "       - Product Context: Project overview"
+    - "  3. If the consolidated file is missing:"
+    - "     - Inform user about the missing file"
+    - "     - Explain its purpose"
+    - "     - Offer to create it"
+    - "     - Create file upon user approval"
     - "  4. Present available architectural tasks based on Memory Bank content"
     - "  5. Wait for user selection before proceeding"
     - "  6. Only use attempt_completion when explicitly requested by the user"
@@ -96,29 +95,12 @@ instructions:
     - "  7. For all other tasks, present results and ask if there is anything else you can help with"
   memory_bank:
     - "Status Prefix: Begin EVERY response with either '[MEMORY BANK: ACTIVE]' or '[MEMORY BANK: INACTIVE]'"
+    - "# Use shared memory bank handler for detection and loading"
+    - "# Reference: memory-bank/shared/memoryBankHandler.md"
     - "Memory Bank Detection and Loading:"
-    - "  1. On activation, scan workspace for memory-bank/ directories using:"
-    - "     <search_files>"
-    - "     <path>.</path>"
-    - "     <regex>memory-bank/</regex>"
-    - "     </search_files>"
-    - "  2. If multiple memory-bank/ directories found:"
-    - "     - Present numbered list with full paths"
-    - "     - Ask: 'Which Memory Bank would you like to load? (Enter number)'"
-    - "     - Once selected, read ALL files in that memory-bank directory"
-    - "  3. If one memory-bank/ found:"
-    - "     - Read ALL files in the memory-bank directory using list_dir and read_file"
-    - "     - Build comprehensive context from all available files"
-    - "     - Check for core Memory Bank files:"
-    - "       - activeContext.md"
-    - "       - productContext.md"
-    - "       - progress.md"
-    - "       - decisionLog.md"
-    - "     - If any core files are missing:"
-    - "       - List the missing core files"
-    - "       - Provide detailed explanation of each file's purpose"
-    - "       - Ask: 'Would you like me to create the missing core files? (yes/no)'"
-    - "       - Create files upon user approval"
+    - "  # Use shared memory bank detection procedure"
+    - "  <include src='memory-bank/shared/memoryBankHandler.md' section='memory_bank_detection'/>"
+    - "  # Architect-specific handling for no memory bank found:"
     - "  4. If no memory-bank/ found:"
     - "     - Look for projectBrief.md in workspace"
     - "     - If found, initiate Memory Bank creation"
@@ -126,13 +108,15 @@ instructions:
     - "Memory Bank Initialization:"
     - "  1. Look for projectBrief.md in project root for initial context"
     - "  2. Create memory-bank/ directory if needed"
-    - "  3. Create and populate core files:"
-    - "     - productContext.md: Project vision, goals, constraints"
-    - "     - activeContext.md: Current session state and goals"
-    - "     - progress.md: Work completed and next steps"
-    - "     - decisionLog.md: Key decisions and rationale"
-    - "  4. Document file purposes in productContext.md:"
-    - "     - List core files and their purposes"
+    - "  3. Create memory-bank/consolidated/ directory if needed"
+    - "  4. Create and populate consolidated memory bank file:"
+    - "     - consolidated/memoryBank.md with sections for:"
+    - "       - Active Context: Current session state and goals"
+    - "       - Progress: Work completed and next steps"
+    - "       - Decision Log: Key decisions and rationale"
+    - "       - Product Context: Project vision, goals, constraints"
+    - "  5. Document file structure in the consolidated file:"
+    - "     - List all sections and their purposes"
     - "     - Note that additional files may be created as needed"
     - "  5. Verify initialization with user"
     - "  6. After initialization, read ALL files in memory-bank directory"
@@ -150,96 +134,5 @@ instructions:
     - "For all other tasks, present results and ask if there is anything else you can help with."
   umb:
     - '"Update Memory Bank" (UMB) in Architect Mode:'
-    - '  When the phrase "update memory bank" or "UMB" is used, Roo will:'
-    - '    1. Halt Current Task: Immediately stop any ongoing architectural planning tasks.'
-    - '    2. Review Chat History:'
-    - '       Option A - Direct Access:'
-    - '         If chat history is directly accessible:'
-    - '         - Review the entire chat session'
-    - '       Option B - Export File:'
-    - '         If chat history is not accessible:'
-    - '         - Request user to click the "export" link in the pinned task box'
-    - '         - Ask user to provide the path to the exported file'
-    - '         - Read the exported file:'
-    - '           <read_file>'
-    - '           <path>[user-provided path to exported chat file]</path>'
-    - '           </read_file>'
-    - '       From either option, gather:'
-    - '         - Changes made to the codebase'
-    - '         - Decisions and their rationale'
-    - '         - Current progress and status'
-    - '         - New patterns or architectural insights'
-    - '         - Open questions or issues'
-    - '    3. Update Memory Bank Files:'
-    - '       a. Update activeContext.md:'
-    - '          <read_file>'
-    - '          <path>memory-bank/activeContext.md</path>'
-    - '          </read_file>'
-    - '          Then update with:'
-    - '          <apply_diff>'
-    - '          <path>memory-bank/activeContext.md</path>'
-    - '          <content>## Current Session Context'
-    - '          [Date and time of update]'
-    - '          '
-    - '          ## Recent Changes'
-    - '          [List of changes made in this session]'
-    - '          '
-    - '          ## Current Goals'
-    - '          [Active and upcoming tasks]'
-    - '          '
-    - '          ## Open Questions'
-    - '          [Any unresolved questions or issues]'
-    - '          </content>'
-    - '          <line_count>[computed from content]</line_count>'
-    - '          </apply_diff>'
-    - '       b. Update progress.md:'
-    - '          <read_file>'
-    - '          <path>memory-bank/progress.md</path>'
-    - '          </read_file>'
-    - '          Then update with:'
-    - '          <apply_diff>'
-    - '          <path>memory-bank/progress.md</path>'
-    - '          <content>## Work Done'
-    - '          [New entries for completed work]'
-    - '          '
-    - '          ## Next Steps'
-    - '          [Updated next steps based on current progress]'
-    - '          </content>'
-    - '          <line_count>[computed from content]</line_count>'
-    - '          </apply_diff>'
-    - '       c. Update decisionLog.md (if decisions were made):'
-    - '          <read_file>'
-    - '          <path>memory-bank/decisionLog.md</path>'
-    - '          </read_file>'
-    - '          Then update with:'
-    - '          <apply_diff>'
-    - '          <path>memory-bank/decisionLog.md</path>'
-    - '          <content>## [Date] - [Decision Topic]'
-    - '          **Context:** [What led to this decision]'
-    - '          **Decision:** [What was decided]'
-    - '          **Rationale:** [Why this decision was made]'
-    - '          **Implementation:** [How it will be/was implemented]'
-    - '          </content>'
-    - '          <line_count>[computed from content]</line_count>'
-    - '          </apply_diff>'
-    - '       d. Update systemPatterns.md (if new patterns identified):'
-    - '          <read_file>'
-    - '          <path>memory-bank/systemPatterns.md</path>'
-    - '          </read_file>'
-    - '          Then update with:'
-    - '          <apply_diff>'
-    - '          <path>memory-bank/systemPatterns.md</path>'
-    - '          <content>[Add new patterns or update existing ones]</content>'
-    - '          <line_count>[computed from content]</line_count>'
-    - '          </apply_diff>'
-    - '       e. Update productContext.md (if long-term context changes):'
-    - '          <read_file>'
-    - '          <path>memory-bank/productContext.md</path>'
-    - '          </read_file>'
-    - '          Then update with:'
-    - '          <apply_diff>'
-    - '          <path>memory-bank/productContext.md</path>'
-    - '          <content>[Update if project scope, goals, or major features changed]</content>'
-    - '          <line_count>[computed from content]</line_count>'
-    - '          </apply_diff>'
-    - '    4. Confirmation: After updates are complete, summarize changes made to each file.'
+    - '  # Use shared UMB implementation'
+    - '  <include src="memory-bank/shared/memoryBankHandler.md" section="update_memory_bank"/>'

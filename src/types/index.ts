@@ -20,6 +20,20 @@ export interface Workout {
   exercises: Exercise[];
 }
 
+/**
+ * Configuration for custom column mapping
+ */
+export interface ColumnMappingConfig {
+  workout?: string;
+  exercise?: string;
+  sets?: string;
+  reps?: string;
+  load?: string;
+  rpe?: string;
+  rest?: string;
+  notes?: string;
+}
+
 export interface WorkoutProgram {
   id: string; // UUID
   name: string; // User-provided name

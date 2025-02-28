@@ -1,7 +1,7 @@
 import * as ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import * as Papa from 'papaparse';
-import { Exercise, WorkoutProgram, Workout } from '../../types';
+import { Exercise, WorkoutProgram, Workout, ColumnMappingConfig } from '../../types';
 
 /**
  * UUID generation for workout programs
@@ -12,19 +12,37 @@ const generateUUID = (): string => {
 };
 
 /**
+ * Default column mapping used when no custom mapping is provided
+ */
+const DEFAULT_COLUMN_MAPPING: ColumnMappingConfig = {
+  workout: 'workout',
+  exercise: 'exercise',
+  sets: 'sets',
+  reps: 'reps',
+  load: 'load',
+  rpe: 'rpe',
+  rest: 'rest',
+  notes: 'notes'
+};
+
+/**
  * Parses an Excel or CSV file containing workout program data.
  * @param file The file to parse
+ * @param columnMapping Optional custom column mapping configuration
  * @returns A WorkoutProgram object
  */
-export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
+export async function parseExcelFile(file: File, columnMapping?: ColumnMappingConfig): Promise<WorkoutProgram> {
   try {
+    // Merge provided column mapping with defaults
+    const effectiveMapping = columnMapping ? { ...DEFAULT_COLUMN_MAPPING, ...columnMapping } : DEFAULT_COLUMN_MAPPING;
+    
     // Determine file type based on extension
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
     if (fileExtension === '.csv') {
-      return await parseCSVFile(file);
+      return await parseCSVFile(file, effectiveMapping);
     } else {
-      return await parseExcelWorkbook(file);
+      return await parseExcelWorkbook(file, effectiveMapping);
     }
   } catch (error) {
     // Add more context to errors
@@ -40,9 +58,154 @@ export async function parseExcelFile(file: File): Promise<WorkoutProgram> {
 }
 
 /**
- * Parses an Excel workbook file.
+ * Interface for column mapping
  */
-async function parseExcelWorkbook(file: File): Promise<WorkoutProgram> {
+interface ColumnMapping {
+  workout: number;
+  exercise: number;
+  sets: number;
+  reps: number;
+  load: number;
+  rpe: number;
+  rest: number;
+  notes: number;
+}
+
+/**
+ * Detects the header row in an Excel worksheet
+ * @param worksheet The Excel worksheet to analyze
+ * @param columnMapping Custom column mapping configuration
+ * @returns An object containing the header row number and column mapping
+ */
+function detectHeaderRow(worksheet: ExcelJS.Worksheet, columnMapping: ColumnMappingConfig): { headerRowNumber: number; columnMapping: ColumnMapping } {
+  // Convert column mapping to lowercase for case-insensitive matching
+  const normalizedColumnMapping: Record<string, string> = {};
+  Object.entries(columnMapping).forEach(([key, value]) => {
+    normalizedColumnMapping[key] = value.toLowerCase();
+  });
+  
+  const requiredColumns = [
+    normalizedColumnMapping.workout,
+    normalizedColumnMapping.exercise, 
+    normalizedColumnMapping.sets, 
+    normalizedColumnMapping.reps, 
+    normalizedColumnMapping.load, 
+    normalizedColumnMapping.rpe, 
+    normalizedColumnMapping.rest
+  ];
+  
+  const maxRowsToCheck = Math.min(10, worksheet.rowCount); // Check up to 10 rows or all rows if less
+  
+  // Try to find a row that contains all required columns
+  for (let rowNumber = 1; rowNumber <= maxRowsToCheck; rowNumber++) {
+    const row = worksheet.getRow(rowNumber);
+    const rowValues = row.values as (string | undefined)[];
+    
+    // Skip empty rows
+    if (!rowValues || rowValues.length <= 1) continue;
+    
+    // Normalize header values (trim whitespace, convert to lowercase)
+    const normalizedValues = rowValues.map(value =>
+      typeof value === 'string' ? value.trim().toLowerCase() : value
+    );
+    
+    // Check if all required columns are present (case-insensitive)
+    const missingColumns = requiredColumns.filter(column =>
+      !normalizedValues.some(val =>
+        typeof val === 'string' && val.toLowerCase() === column
+      )
+    );
+    
+    if (missingColumns.length === 0) {
+      // Found a valid header row, create column mapping
+      const columnIndices: Partial<ColumnMapping> = {};
+      
+      normalizedValues.forEach((value, index) => {
+        if (typeof value !== 'string') return;
+        
+        const normalizedValue = value.toLowerCase();
+        if (normalizedValue === normalizedColumnMapping.workout) columnIndices.workout = index;
+        else if (normalizedValue === normalizedColumnMapping.exercise) columnIndices.exercise = index;
+        else if (normalizedValue === normalizedColumnMapping.sets) columnIndices.sets = index;
+        else if (normalizedValue === normalizedColumnMapping.reps) columnIndices.reps = index;
+        else if (normalizedValue === normalizedColumnMapping.load) columnIndices.load = index;
+        else if (normalizedValue === normalizedColumnMapping.rpe) columnIndices.rpe = index;
+        else if (normalizedValue === normalizedColumnMapping.rest) columnIndices.rest = index;
+        else if (normalizedValue === normalizedColumnMapping.notes) columnIndices.notes = index;
+      });
+      
+      // Ensure all required columns are mapped
+      if (
+        columnIndices.workout !== undefined &&
+        columnIndices.exercise !== undefined &&
+        columnIndices.sets !== undefined &&
+        columnIndices.reps !== undefined &&
+        columnIndices.load !== undefined &&
+        columnIndices.rpe !== undefined &&
+        columnIndices.rest !== undefined
+      ) {
+        return {
+          headerRowNumber: rowNumber,
+          columnMapping: {
+            workout: columnIndices.workout,
+            exercise: columnIndices.exercise,
+            sets: columnIndices.sets,
+            reps: columnIndices.reps,
+            load: columnIndices.load,
+            rpe: columnIndices.rpe,
+            rest: columnIndices.rest,
+            notes: columnIndices.notes || 0 // Default to 0 if notes column not found
+          }
+        };
+      }
+    }
+  }
+  
+  // If no valid header row found, throw an error with custom column names
+  throw new Error(`Could not detect a valid header row. Please ensure your file contains the required columns: ${normalizedColumnMapping.workout}, ${normalizedColumnMapping.exercise}, ${normalizedColumnMapping.sets}, ${normalizedColumnMapping.reps}, ${normalizedColumnMapping.load}, ${normalizedColumnMapping.rpe}, ${normalizedColumnMapping.rest}.`);
+}
+
+/**
+ * Extracts program name from an Excel worksheet
+ * @param worksheet The Excel worksheet
+ * @param headerRowNumber The detected header row number
+ * @returns The program name
+ */
+function extractProgramName(worksheet: ExcelJS.Worksheet, headerRowNumber: number): string {
+  // Try to find program name in cell with "Program Name" label
+  for (let rowNumber = 1; rowNumber < headerRowNumber; rowNumber++) {
+    const row = worksheet.getRow(rowNumber);
+    const rowValues = row.values as (string | undefined)[];
+    
+    if (!rowValues || rowValues.length <= 1) continue;
+    
+    for (let i = 1; i < rowValues.length; i++) {
+      const cellValue = rowValues[i];
+      const prevCellValue = rowValues[i - 1];
+      
+      if (
+        typeof prevCellValue === 'string' &&
+        prevCellValue.toLowerCase().includes('program') &&
+        prevCellValue.toLowerCase().includes('name') &&
+        typeof cellValue === 'string' &&
+        cellValue.trim() !== ''
+      ) {
+        return cellValue.trim();
+      }
+    }
+  }
+  
+  // If no program name found, use default
+  return 'Parsed Program';
+}
+
+/**
+ * Parses an Excel workbook file.
+ * @param file The Excel file to parse
+ * @param columnMapping Custom column mapping configuration
+ * @returns A WorkoutProgram object
+ */
+async function parseExcelWorkbook(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
   const workbook = new ExcelJS.Workbook();
   const buffer = await file.arrayBuffer();
   await workbook.xlsx.load(buffer);
@@ -52,37 +215,44 @@ async function parseExcelWorkbook(file: File): Promise<WorkoutProgram> {
     throw new Error('Invalid Excel file format. The file appears to be empty or improperly formatted.');
   }
 
-  // Get program name from cell B1
-  const programName = worksheet.getCell('B1').value?.toString() || 'Parsed Program';
-
-  // Validate required columns
-  const headerRow = worksheet.getRow(2);
-  const requiredColumns = ['Workout', 'Exercise', 'Sets', 'Reps', 'Load', 'RPE', 'Rest'];
-  const headerValues = headerRow.values as (string | undefined)[];
+  // Detect header row and column mapping
+  const { headerRowNumber, columnMapping: columnIndices } = detectHeaderRow(worksheet, columnMapping);
   
-  const missingColumns = requiredColumns.filter(column => !headerValues.includes(column));
-  if (missingColumns.length > 0) {
-    throw new Error(`Missing required columns: ${missingColumns.join(', ')}. Please ensure your file has all required columns.`);
-  }
+  // Extract program name
+  const programName = extractProgramName(worksheet, headerRowNumber);
 
   // Parse workouts
   const workouts: Workout[] = [];
   let currentWorkout: Workout | null = null;
 
   worksheet.eachRow((row, rowNumber) => {
-    if (rowNumber <= 2) return; // Skip header rows
+    if (rowNumber <= headerRowNumber) return; // Skip header rows
 
     try {
+      // Get cell values using the dynamic column mapping
+      const exerciseName = row.getCell(columnIndices.exercise + 1).value?.toString() || '';
+      const setsValue = row.getCell(columnIndices.sets + 1).value?.toString() || '0';
+      const repsValue = row.getCell(columnIndices.reps + 1).value?.toString() || '';
+      const loadValue = row.getCell(columnIndices.load + 1).value?.toString() || '0';
+      const rpeValue = row.getCell(columnIndices.rpe + 1).value?.toString() || '0';
+      const restValue = row.getCell(columnIndices.rest + 1).value?.toString() || '0';
+      const notesValue = columnIndices.notes ?
+        row.getCell(columnIndices.notes + 1).value?.toString() || '' : '';
+
+      // Skip rows with empty exercise names
+      if (!exerciseName.trim()) return;
+
       const exercise: Exercise = {
-        name: row.getCell(2).value?.toString() || '',
-        sets: parseInt(row.getCell(3).value?.toString() || '0'),
-        reps: row.getCell(4).value?.toString() || '',
-        load: parseInt(row.getCell(5).value?.toString() || '0'),
-        rpe: parseInt(row.getCell(6).value?.toString() || '0'),
-        rest: parseInt(row.getCell(7).value?.toString() || '0'),
-        notes: row.getCell(8).value?.toString() || ''
+        name: exerciseName,
+        sets: parseInt(setsValue),
+        reps: repsValue,
+        load: parseInt(loadValue),
+        rpe: parseInt(rpeValue),
+        rest: parseInt(restValue),
+        notes: notesValue
       };
 
+      // Validate numeric fields
       if (isNaN(exercise.sets)) {
         throw new Error(`Invalid 'Sets' value at row ${rowNumber}. Expected a number.`);
       }
@@ -99,8 +269,9 @@ async function parseExcelWorkbook(file: File): Promise<WorkoutProgram> {
         throw new Error(`Invalid 'Rest' value at row ${rowNumber}. Expected a number.`);
       }
 
-      const workoutName = row.getCell(1).value?.toString();
-      if (workoutName && (!currentWorkout || currentWorkout.name !== workoutName)) {
+      // Get workout name using the dynamic column mapping
+      const workoutName = row.getCell(columnIndices.workout + 1).value?.toString();
+      if (workoutName && workoutName.trim() && (!currentWorkout || currentWorkout.name !== workoutName)) {
         currentWorkout = {
           name: workoutName,
           day: '', // Default empty day
@@ -133,9 +304,92 @@ async function parseExcelWorkbook(file: File): Promise<WorkoutProgram> {
 }
 
 /**
- * Parses a CSV file.
+ * Detects column mapping from CSV headers
+ * @param headers Array of header strings from CSV
+ * @param columnMapping Custom column mapping configuration
+ * @returns Column mapping object
  */
-async function parseCSVFile(file: File): Promise<WorkoutProgram> {
+function detectCSVColumnMapping(headers: string[], columnMapping: ColumnMappingConfig): ColumnMapping {
+  // Normalize headers (trim whitespace, convert to lowercase)
+  const normalizedHeaders = headers.map(header =>
+    typeof header === 'string' ? header.trim().toLowerCase() : ''
+  );
+  
+  // Convert column mapping to lowercase for case-insensitive matching
+  const normalizedColumnMapping: Record<string, string> = {};
+  Object.entries(columnMapping).forEach(([key, value]) => {
+    normalizedColumnMapping[key] = value.toLowerCase();
+  });
+  
+  // Initialize column mapping with default values
+  const columnIndices: Partial<ColumnMapping> = {};
+  
+  // Map headers to column indices
+  normalizedHeaders.forEach((header, index) => {
+    if (header === normalizedColumnMapping.workout) columnIndices.workout = index;
+    else if (header === normalizedColumnMapping.exercise) columnIndices.exercise = index;
+    else if (header === normalizedColumnMapping.sets) columnIndices.sets = index;
+    else if (header === normalizedColumnMapping.reps) columnIndices.reps = index;
+    else if (header === normalizedColumnMapping.load) columnIndices.load = index;
+    else if (header === normalizedColumnMapping.rpe) columnIndices.rpe = index;
+    else if (header === normalizedColumnMapping.rest) columnIndices.rest = index;
+    else if (header === normalizedColumnMapping.notes) columnIndices.notes = index;
+  });
+  
+  // Check if all required columns are present
+  const requiredColumns = ['workout', 'exercise', 'sets', 'reps', 'load', 'rpe', 'rest'];
+  const missingColumns = requiredColumns.filter(column =>
+    columnIndices[column as keyof ColumnMapping] === undefined
+  );
+  
+  if (missingColumns.length > 0) {
+    throw new Error(`Missing required columns: ${missingColumns.map(col => normalizedColumnMapping[col]).join(', ')}. Please ensure your CSV file has all required columns.`);
+  }
+  
+  // Return complete column mapping
+  return {
+    workout: columnIndices.workout!,
+    exercise: columnIndices.exercise!,
+    sets: columnIndices.sets!,
+    reps: columnIndices.reps!,
+    load: columnIndices.load!,
+    rpe: columnIndices.rpe!,
+    rest: columnIndices.rest!,
+    notes: columnIndices.notes || 0 // Default to 0 if notes column not found
+  };
+}
+
+/**
+ * Extracts program name from CSV data
+ * @param data CSV data rows
+ * @returns Program name
+ */
+function extractCSVProgramName(data: any[]): string {
+  // Look for a row with "Program Name" or similar
+  for (let i = 0; i < Math.min(5, data.length); i++) {
+    const row = data[i];
+    const keys = Object.keys(row);
+    
+    for (const key of keys) {
+      if (key.toLowerCase().includes('program') && key.toLowerCase().includes('name')) {
+        const value = row[key];
+        if (typeof value === 'string' && value.trim() !== '') {
+          return value.trim();
+        }
+      }
+    }
+  }
+  
+  return 'CSV Workout Program';
+}
+
+/**
+ * Parses a CSV file.
+ * @param file The CSV file to parse
+ * @param columnMapping Custom column mapping configuration
+ * @returns A WorkoutProgram object
+ */
+async function parseCSVFile(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,
@@ -146,36 +400,39 @@ async function parseCSVFile(file: File): Promise<WorkoutProgram> {
             throw new Error('No data found in CSV file.');
           }
 
-          // Check for required columns
-          const requiredColumns = ['Workout', 'Exercise', 'Sets', 'Reps', 'Load', 'RPE', 'Rest'];
+          // Extract headers from the first row
           const firstRow = results.data[0] as Record<string, unknown>;
           const headers = Object.keys(firstRow);
           
-          const missingColumns = requiredColumns.filter(column => !headers.includes(column));
-          if (missingColumns.length > 0) {
-            throw new Error(`Missing required columns: ${missingColumns.join(', ')}. Please ensure your CSV file has all required columns.`);
-          }
-
-          // Extract program name from first row if available
-          const programName = 'CSV Workout Program';
+          // Detect column mapping
+          const columnIndices = detectCSVColumnMapping(headers, columnMapping);
+          
+          // Extract program name
+          const programName = extractCSVProgramName(results.data);
           
           // Group by workout
           const workoutMap = new Map<string, Exercise[]>();
           
           results.data.forEach((row: any, index: number) => {
-            if (!row.Workout || !row.Exercise) {
-              return; // Skip rows without workout or exercise
+            // Get values using column mapping
+            const workoutName = row[headers[columnIndices.workout]];
+            const exerciseName = row[headers[columnIndices.exercise]];
+            
+            // Skip rows without workout or exercise
+            if (!workoutName || !exerciseName) {
+              return;
             }
 
             try {
               const exercise: Exercise = {
-                name: row.Exercise || '',
-                sets: parseInt(row.Sets || '0'),
-                reps: row.Reps || '',
-                load: parseInt(row.Load || '0'),
-                rpe: parseInt(row.RPE || '0'),
-                rest: parseInt(row.Rest || '0'),
-                notes: row.Notes || ''
+                name: exerciseName || '',
+                sets: parseInt(row[headers[columnIndices.sets]] || '0'),
+                reps: row[headers[columnIndices.reps]] || '',
+                load: parseInt(row[headers[columnIndices.load]] || '0'),
+                rpe: parseInt(row[headers[columnIndices.rpe]] || '0'),
+                rest: parseInt(row[headers[columnIndices.rest]] || '0'),
+                notes: columnIndices.notes !== undefined ?
+                  row[headers[columnIndices.notes]] || '' : ''
               };
 
               if (isNaN(exercise.sets)) {
@@ -194,11 +451,11 @@ async function parseCSVFile(file: File): Promise<WorkoutProgram> {
                 throw new Error(`Invalid 'Rest' value at row ${index + 2}. Expected a number.`);
               }
 
-              if (!workoutMap.has(row.Workout)) {
-                workoutMap.set(row.Workout, []);
+              if (!workoutMap.has(workoutName)) {
+                workoutMap.set(workoutName, []);
               }
               
-              workoutMap.get(row.Workout)?.push(exercise);
+              workoutMap.get(workoutName)?.push(exercise);
             } catch (error) {
               if (error instanceof Error) {
                 throw error;

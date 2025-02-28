@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { parseExcelFile } from '../features/excelParsing/excelParser';
-import { WorkoutProgram } from '../types';
+import { WorkoutProgram, ColumnMappingConfig } from '../types';
 import { storeWorkoutProgram } from '../lib/indexedDB';
 
 /**
@@ -13,14 +13,18 @@ export interface UseExcelUploadResult {
   error: string | null;
   /** Whether file processing was successful */
   success: boolean;
+  /** The parsed workout program (for preview) */
+  previewData: WorkoutProgram | null;
   /** Function to upload and process an Excel file */
-  uploadExcel: (file: File) => Promise<void>;
+  uploadExcel: (file: File, columnMapping?: ColumnMappingConfig) => Promise<void>;
+  /** Function to confirm and save the previewed data */
+  confirmUpload: () => Promise<void>;
   /** Function to reset the state */
   reset: () => void;
 }
 
 /**
- * Custom hook for handling Excel file uploads with validation and processing
+ * Custom hook for handling Excel file uploads with validation, preview, and processing
  * @param onSuccess Optional callback function to be called on successful upload
  * @returns Object containing state and functions for Excel file handling
  */
@@ -28,6 +32,7 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [previewData, setPreviewData] = useState<WorkoutProgram | null>(null);
 
   /**
    * Reset all state values
@@ -36,6 +41,7 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
     setIsLoading(false);
     setError(null);
     setSuccess(false);
+    setPreviewData(null);
   }, []);
 
   /**
@@ -77,8 +83,9 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
   /**
    * Upload and process an Excel file
    * @param file The file to upload and process
+   * @param columnMapping Optional custom column mapping configuration
    */
-  const uploadExcel = useCallback(async (file: File): Promise<void> => {
+  const uploadExcel = useCallback(async (file: File, columnMapping?: ColumnMappingConfig): Promise<void> => {
     reset();
     
     if (!validateFile(file)) {
@@ -88,8 +95,33 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
     setIsLoading(true);
     
     try {
-      const program: WorkoutProgram = await parseExcelFile(file);
-      await storeWorkoutProgram(program);
+      // Parse the file but don't save it yet - just set it for preview
+      const program: WorkoutProgram = await parseExcelFile(file, columnMapping);
+      setPreviewData(program);
+    } catch (err) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'An unknown error occurred while processing the file';
+      setError(errorMessage);
+      setPreviewData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [reset, validateFile]);
+
+  /**
+   * Confirm and save the previewed data
+   */
+  const confirmUpload = useCallback(async (): Promise<void> => {
+    if (!previewData) {
+      setError('No data to save. Please upload a file first.');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await storeWorkoutProgram(previewData);
       setSuccess(true);
       if (onSuccess) {
         onSuccess();
@@ -97,18 +129,20 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
-        : 'An unknown error occurred while processing the file';
+        : 'An unknown error occurred while saving the program';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [onSuccess, reset, validateFile]);
+  }, [previewData, onSuccess]);
 
   return {
     isLoading,
     error,
     success,
+    previewData,
     uploadExcel,
+    confirmUpload,
     reset
   };
 }

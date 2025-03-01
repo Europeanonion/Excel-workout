@@ -4,6 +4,59 @@ import * as Papa from 'papaparse';
 import { Exercise, WorkoutProgram, Workout, ColumnMappingConfig } from '../../types';
 
 /**
+ * Interface for parser options
+ */
+export interface ParserOptions {
+  /** Custom column mapping configuration */
+  columnMapping?: ColumnMappingConfig;
+  /** Whether to evaluate Excel formulas */
+  evaluateFormulas?: boolean;
+  /** Sheet name or index to parse (for multi-sheet support) */
+  sheetNameOrIndex?: string | number;
+  /** Whether to continue processing when errors are encountered */
+  continueOnError?: boolean;
+  /** Default values for missing data */
+  defaultValues?: {
+    sets?: number;
+    reps?: string;
+    load?: number;
+    rpe?: number;
+    rest?: number;
+    notes?: string;
+  };
+}
+
+/**
+ * Interface for parsing results including errors
+ */
+export interface ParsingResult {
+  program: WorkoutProgram;
+  errors: ParsingError[];
+  warnings: ParsingWarning[];
+}
+
+/**
+ * Interface for parsing errors
+ */
+export interface ParsingError {
+  row: number;
+  column?: string;
+  message: string;
+  critical: boolean;
+}
+
+/**
+ * Interface for parsing warnings
+ */
+export interface ParsingWarning {
+  row: number;
+  column?: string;
+  message: string;
+  originalValue?: any;
+  convertedValue?: any;
+}
+
+/**
  * UUID generation for workout programs
  * @returns A unique identifier string
  */
@@ -26,26 +79,145 @@ const DEFAULT_COLUMN_MAPPING: ColumnMappingConfig = {
 };
 
 /**
+ * Detects and converts a value to a number, with error handling
+ * @param value The value to convert
+ * @param defaultValue Default value to use if conversion fails
+ * @param rowNumber Row number for error reporting
+ * @param fieldName Field name for error reporting
+ * @param errors Array to collect errors
+ * @param warnings Array to collect warnings
+ * @returns The converted number or default value
+ */
+function detectAndConvertNumber(
+  value: string,
+  defaultValue: number,
+  rowNumber: number,
+  fieldName: string,
+  errors: ParsingError[],
+  warnings: ParsingWarning[]
+): number {
+  // Handle empty values
+  if (!value || value.trim() === '') {
+    warnings.push({
+      row: rowNumber,
+      column: fieldName.toLowerCase(),
+      message: `Empty '${fieldName}' value at row ${rowNumber}. Using default value ${defaultValue}.`,
+      originalValue: value,
+      convertedValue: defaultValue
+    });
+    return defaultValue;
+  }
+
+  // Try to convert to number
+  const trimmedValue = value.trim();
+  const parsedValue = parseFloat(trimmedValue);
+  
+  if (!isNaN(parsedValue)) {
+    return parsedValue;
+  }
+  
+  // Handle special cases like "N/A", "TBD", etc.
+  const lowerValue = trimmedValue.toLowerCase();
+  if (
+    lowerValue === 'n/a' ||
+    lowerValue === 'tbd' ||
+    lowerValue === 'na' ||
+    lowerValue === '-'
+  ) {
+    warnings.push({
+      row: rowNumber,
+      column: fieldName.toLowerCase(),
+      message: `Non-numeric '${fieldName}' value "${value}" at row ${rowNumber}. Using default value ${defaultValue}.`,
+      originalValue: value,
+      convertedValue: defaultValue
+    });
+    return defaultValue;
+  }
+  
+  // Add error for invalid number
+  errors.push({
+    row: rowNumber,
+    column: fieldName.toLowerCase(),
+    message: `Invalid '${fieldName}' value "${value}" at row ${rowNumber}. Expected a number.`,
+    critical: false
+  });
+  
+  return defaultValue;
+}
+
+/**
  * Parses an Excel or CSV file containing workout program data.
  * @param file The file to parse
- * @param columnMapping Optional custom column mapping configuration
- * @returns A WorkoutProgram object
+ * @param options Optional parser options including column mapping, sheet selection, etc.
+ * @returns A ParsingResult object containing the program, errors, and warnings
  */
-export async function parseExcelFile(file: File, columnMapping?: ColumnMappingConfig): Promise<WorkoutProgram> {
+export async function parseExcelFile(file: File, options?: ParserOptions): Promise<ParsingResult | WorkoutProgram> {
+  // Initialize errors and warnings arrays
+  const errors: ParsingError[] = [];
+  const warnings: ParsingWarning[] = [];
+  
   try {
     // Merge provided column mapping with defaults
-    const effectiveMapping = columnMapping ? { ...DEFAULT_COLUMN_MAPPING, ...columnMapping } : DEFAULT_COLUMN_MAPPING;
+    const effectiveMapping = options?.columnMapping
+      ? { ...DEFAULT_COLUMN_MAPPING, ...options.columnMapping }
+      : DEFAULT_COLUMN_MAPPING;
     
     // Determine file type based on extension
     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
     
+    let program: WorkoutProgram;
+    
     if (fileExtension === '.csv') {
-      return await parseCSVFile(file, effectiveMapping);
+      program = await parseCSVFile(file, effectiveMapping, options, errors, warnings);
     } else {
-      return await parseExcelWorkbook(file, effectiveMapping);
+      program = await parseExcelWorkbook(file, effectiveMapping, options, errors, warnings);
     }
+    
+    // For backward compatibility, if no errors and warnings, just return the program
+    if (errors.length === 0 && warnings.length === 0) {
+      return program;
+    }
+    
+    // Return the full parsing result
+    return {
+      program,
+      errors,
+      warnings
+    };
   } catch (error) {
-    // Add more context to errors
+    // If continueOnError is true, return what we have with the error
+    if (options?.continueOnError) {
+      // Create a minimal valid program
+      const program: WorkoutProgram = {
+        id: generateUUID(),
+        name: 'Parsed Program (with errors)',
+        workouts: [],
+        history: []
+      };
+      
+      // Add the error to the errors array
+      if (error instanceof Error) {
+        errors.push({
+          row: 0,
+          message: error.message,
+          critical: true
+        });
+      } else {
+        errors.push({
+          row: 0,
+          message: 'An unexpected error occurred while parsing the file.',
+          critical: true
+        });
+      }
+      
+      return {
+        program,
+        errors,
+        warnings
+      };
+    }
+    
+    // Otherwise, handle errors as before
     if (error instanceof Error) {
       if (error.message.includes('Invalid data type')) {
         throw new Error('Invalid data type detected. Please ensure all numeric fields contain valid numbers.');
@@ -203,14 +375,64 @@ function extractProgramName(worksheet: ExcelJS.Worksheet, headerRowNumber: numbe
  * Parses an Excel workbook file.
  * @param file The Excel file to parse
  * @param columnMapping Custom column mapping configuration
+ * @param options Optional parser options
+ * @param errors Array to collect parsing errors
+ * @param warnings Array to collect parsing warnings
  * @returns A WorkoutProgram object
  */
-async function parseExcelWorkbook(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
+async function parseExcelWorkbook(
+  file: File,
+  columnMapping: ColumnMappingConfig,
+  options?: ParserOptions,
+  errors: ParsingError[] = [],
+  warnings: ParsingWarning[] = []
+): Promise<WorkoutProgram> {
   const workbook = new ExcelJS.Workbook();
   const buffer = await file.arrayBuffer();
   await workbook.xlsx.load(buffer);
   
-  const worksheet = workbook.getWorksheet(1);
+  // Get available sheet names for potential warnings
+  const availableSheets = workbook.worksheets.map(sheet => sheet.name);
+  
+  // Determine which worksheet to use based on options
+  let worksheet: ExcelJS.Worksheet | undefined;
+  
+  if (options?.sheetNameOrIndex !== undefined) {
+    // User specified a sheet
+    if (typeof options.sheetNameOrIndex === 'string') {
+      // Try to find by name
+      worksheet = workbook.getWorksheet(options.sheetNameOrIndex);
+      if (!worksheet) {
+        if (options.continueOnError) {
+          warnings.push({
+            row: 0,
+            message: `Sheet "${options.sheetNameOrIndex}" not found. Available sheets: ${availableSheets.join(', ')}. Using first sheet instead.`,
+          });
+          worksheet = workbook.getWorksheet(1);
+        } else {
+          throw new Error(`Sheet "${options.sheetNameOrIndex}" not found. Available sheets: ${availableSheets.join(', ')}.`);
+        }
+      }
+    } else if (typeof options.sheetNameOrIndex === 'number') {
+      // Try to find by index (1-based)
+      worksheet = workbook.getWorksheet(options.sheetNameOrIndex);
+      if (!worksheet) {
+        if (options.continueOnError) {
+          warnings.push({
+            row: 0,
+            message: `Sheet at index ${options.sheetNameOrIndex} not found. Available sheets: ${availableSheets.join(', ')}. Using first sheet instead.`,
+          });
+          worksheet = workbook.getWorksheet(1);
+        } else {
+          throw new Error(`Sheet at index ${options.sheetNameOrIndex} not found. Available sheets: ${availableSheets.join(', ')}.`);
+        }
+      }
+    }
+  } else {
+    // Default to first sheet
+    worksheet = workbook.getWorksheet(1);
+  }
+  
   if (!worksheet || worksheet.rowCount < 2) {
     throw new Error('Invalid Excel file format. The file appears to be empty or improperly formatted.');
   }
@@ -231,47 +453,56 @@ async function parseExcelWorkbook(file: File, columnMapping: ColumnMappingConfig
     try {
       // Get cell values using the dynamic column mapping
       const exerciseName = row.getCell(columnIndices.exercise + 1).value?.toString() || '';
-      const setsValue = row.getCell(columnIndices.sets + 1).value?.toString() || '0';
+      
+      // Skip rows with empty exercise names
+      if (!exerciseName.trim()) return;
+      
+      // Get other cell values
+      const setsValue = row.getCell(columnIndices.sets + 1).value?.toString() || '';
       const repsValue = row.getCell(columnIndices.reps + 1).value?.toString() || '';
-      const loadValue = row.getCell(columnIndices.load + 1).value?.toString() || '0';
-      const rpeValue = row.getCell(columnIndices.rpe + 1).value?.toString() || '0';
-      const restValue = row.getCell(columnIndices.rest + 1).value?.toString() || '0';
+      const loadValue = row.getCell(columnIndices.load + 1).value?.toString() || '';
+      const rpeValue = row.getCell(columnIndices.rpe + 1).value?.toString() || '';
+      const restValue = row.getCell(columnIndices.rest + 1).value?.toString() || '';
       const notesValue = columnIndices.notes ?
         row.getCell(columnIndices.notes + 1).value?.toString() || '' : '';
 
-      // Skip rows with empty exercise names
-      if (!exerciseName.trim()) return;
-
+      // Apply data type auto-detection and conversion with default values
       const exercise: Exercise = {
         name: exerciseName,
-        sets: parseInt(setsValue),
-        reps: repsValue,
-        load: parseInt(loadValue),
-        rpe: parseInt(rpeValue),
-        rest: parseInt(restValue),
-        notes: notesValue
+        sets: detectAndConvertNumber(setsValue, options?.defaultValues?.sets ?? 0, rowNumber, 'Sets', errors, warnings),
+        reps: repsValue || (options?.defaultValues?.reps ?? ''),
+        load: detectAndConvertNumber(loadValue, options?.defaultValues?.load ?? 0, rowNumber, 'Load', errors, warnings),
+        rpe: detectAndConvertNumber(rpeValue, options?.defaultValues?.rpe ?? 0, rowNumber, 'RPE', errors, warnings),
+        rest: detectAndConvertNumber(restValue, options?.defaultValues?.rest ?? 0, rowNumber, 'Rest', errors, warnings),
+        notes: notesValue || (options?.defaultValues?.notes ?? '')
       };
-
-      // Validate numeric fields
-      if (isNaN(exercise.sets)) {
-        throw new Error(`Invalid 'Sets' value at row ${rowNumber}. Expected a number.`);
-      }
-
-      if (isNaN(exercise.load)) {
-        throw new Error(`Invalid 'Load' value at row ${rowNumber}. Expected a number.`);
-      }
-
-      if (isNaN(exercise.rpe)) {
-        throw new Error(`Invalid 'RPE' value at row ${rowNumber}. Expected a number.`);
-      }
-
-      if (isNaN(exercise.rest)) {
-        throw new Error(`Invalid 'Rest' value at row ${rowNumber}. Expected a number.`);
-      }
 
       // Get workout name using the dynamic column mapping
       const workoutName = row.getCell(columnIndices.workout + 1).value?.toString();
-      if (workoutName && workoutName.trim() && (!currentWorkout || currentWorkout.name !== workoutName)) {
+      
+      // If workout name is missing and we have default values option
+      if (!workoutName || !workoutName.trim()) {
+        if (options?.continueOnError) {
+          warnings.push({
+            row: rowNumber,
+            column: 'workout',
+            message: `Missing workout name at row ${rowNumber}. Using "Unnamed Workout".`,
+          });
+          
+          // Use default workout if none exists yet
+          if (!currentWorkout) {
+            currentWorkout = {
+              name: 'Unnamed Workout',
+              day: '',
+              exercises: []
+            };
+            workouts.push(currentWorkout);
+          }
+        } else {
+          throw new Error(`Missing workout name at row ${rowNumber}.`);
+        }
+      } else if (!currentWorkout || currentWorkout.name !== workoutName) {
+        // Create a new workout
         currentWorkout = {
           name: workoutName,
           day: '', // Default empty day
@@ -284,15 +515,51 @@ async function parseExcelWorkbook(file: File, columnMapping: ColumnMappingConfig
         currentWorkout.exercises.push(exercise);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        throw error;
+      // Handle row-level errors
+      if (options?.continueOnError) {
+        // Add to errors and continue
+        if (error instanceof Error) {
+          errors.push({
+            row: rowNumber,
+            message: error.message,
+            critical: false
+          });
+        } else {
+          errors.push({
+            row: rowNumber,
+            message: `Error parsing row ${rowNumber}: ${error}`,
+            critical: false
+          });
+        }
+      } else {
+        // Throw the error to stop processing
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error(`Error parsing row ${rowNumber}: ${error}`);
       }
-      throw new Error(`Error parsing row ${rowNumber}: ${error}`);
     }
   });
 
+  // Check if we have any valid workouts
   if (workouts.length === 0) {
-    throw new Error('No valid workout data found in the file.');
+    if (options?.continueOnError) {
+      // Create an empty program with a warning
+      errors.push({
+        row: 0,
+        message: 'No valid workout data found in the file.',
+        critical: true
+      });
+      
+      return {
+        id: generateUUID(),
+        name: programName || 'Empty Program',
+        workouts: [],
+        history: []
+      };
+    } else {
+      throw new Error('No valid workout data found in the file.');
+    }
   }
 
   return {
@@ -387,9 +654,18 @@ function extractCSVProgramName(data: any[]): string {
  * Parses a CSV file.
  * @param file The CSV file to parse
  * @param columnMapping Custom column mapping configuration
+ * @param options Optional parser options
+ * @param errors Array to collect parsing errors
+ * @param warnings Array to collect parsing warnings
  * @returns A WorkoutProgram object
  */
-async function parseCSVFile(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
+async function parseCSVFile(
+  file: File,
+  columnMapping: ColumnMappingConfig,
+  options?: ParserOptions,
+  errors: ParsingError[] = [],
+  warnings: ParsingWarning[] = []
+): Promise<WorkoutProgram> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,
@@ -424,65 +700,140 @@ async function parseCSVFile(file: File, columnMapping: ColumnMappingConfig): Pro
             }
 
             try {
+              // Get values for each field
+              const setsValue = row[headers[columnIndices.sets]] || '';
+              const repsValue = row[headers[columnIndices.reps]] || '';
+              const loadValue = row[headers[columnIndices.load]] || '';
+              const rpeValue = row[headers[columnIndices.rpe]] || '';
+              const restValue = row[headers[columnIndices.rest]] || '';
+              const notesValue = columnIndices.notes !== undefined ?
+                row[headers[columnIndices.notes]] || '' : '';
+              
+              // Apply data type auto-detection and conversion with default values
               const exercise: Exercise = {
                 name: exerciseName || '',
-                sets: parseInt(row[headers[columnIndices.sets]] || '0'),
-                reps: row[headers[columnIndices.reps]] || '',
-                load: parseInt(row[headers[columnIndices.load]] || '0'),
-                rpe: parseInt(row[headers[columnIndices.rpe]] || '0'),
-                rest: parseInt(row[headers[columnIndices.rest]] || '0'),
-                notes: columnIndices.notes !== undefined ?
-                  row[headers[columnIndices.notes]] || '' : ''
+                sets: detectAndConvertNumber(setsValue, options?.defaultValues?.sets ?? 0, index + 2, 'Sets', errors, warnings),
+                reps: repsValue || (options?.defaultValues?.reps ?? ''),
+                load: detectAndConvertNumber(loadValue, options?.defaultValues?.load ?? 0, index + 2, 'Load', errors, warnings),
+                rpe: detectAndConvertNumber(rpeValue, options?.defaultValues?.rpe ?? 0, index + 2, 'RPE', errors, warnings),
+                rest: detectAndConvertNumber(restValue, options?.defaultValues?.rest ?? 0, index + 2, 'Rest', errors, warnings),
+                notes: notesValue || (options?.defaultValues?.notes ?? '')
               };
 
-              if (isNaN(exercise.sets)) {
-                throw new Error(`Invalid 'Sets' value at row ${index + 2}. Expected a number.`);
+              // Handle missing workout name with default
+              if (!workoutName || !workoutName.trim()) {
+                if (options?.continueOnError) {
+                  warnings.push({
+                    row: index + 2,
+                    column: 'workout',
+                    message: `Missing workout name at row ${index + 2}. Using "Unnamed Workout".`,
+                  });
+                  
+                  // Use default workout name
+                  if (!workoutMap.has('Unnamed Workout')) {
+                    workoutMap.set('Unnamed Workout', []);
+                  }
+                  workoutMap.get('Unnamed Workout')?.push(exercise);
+                } else {
+                  throw new Error(`Missing workout name at row ${index + 2}.`);
+                }
+              } else {
+                // Normal case with valid workout name
+                if (!workoutMap.has(workoutName)) {
+                  workoutMap.set(workoutName, []);
+                }
+                workoutMap.get(workoutName)?.push(exercise);
               }
-
-              if (isNaN(exercise.load)) {
-                throw new Error(`Invalid 'Load' value at row ${index + 2}. Expected a number.`);
-              }
-
-              if (isNaN(exercise.rpe)) {
-                throw new Error(`Invalid 'RPE' value at row ${index + 2}. Expected a number.`);
-              }
-
-              if (isNaN(exercise.rest)) {
-                throw new Error(`Invalid 'Rest' value at row ${index + 2}. Expected a number.`);
-              }
-
-              if (!workoutMap.has(workoutName)) {
-                workoutMap.set(workoutName, []);
-              }
-              
-              workoutMap.get(workoutName)?.push(exercise);
             } catch (error) {
-              if (error instanceof Error) {
-                throw error;
+              // Handle row-level errors
+              if (options?.continueOnError) {
+                // Add to errors and continue
+                if (error instanceof Error) {
+                  errors.push({
+                    row: index + 2,
+                    message: error.message,
+                    critical: false
+                  });
+                } else {
+                  errors.push({
+                    row: index + 2,
+                    message: `Error parsing row ${index + 2}: ${error}`,
+                    critical: false
+                  });
+                }
+              } else {
+                // Throw the error to stop processing
+                if (error instanceof Error) {
+                  throw error;
+                }
+                throw new Error(`Error parsing row ${index + 2}: ${error}`);
               }
-              throw new Error(`Error parsing row ${index + 2}: ${error}`);
             }
           });
 
+          // Check if we have any valid workouts
           if (workoutMap.size === 0) {
-            throw new Error('No valid workout data found in the CSV file.');
+            if (options?.continueOnError) {
+              // Create an empty program with a warning
+              errors.push({
+                row: 0,
+                message: 'No valid workout data found in the CSV file.',
+                critical: true
+              });
+              
+              resolve({
+                id: generateUUID(),
+                name: programName || 'Empty Program',
+                workouts: [],
+                history: []
+              });
+            } else {
+              throw new Error('No valid workout data found in the CSV file.');
+            }
+          } else {
+            // Convert map to workouts array
+            const workouts: Workout[] = Array.from(workoutMap.entries()).map(([name, exercises]) => ({
+              name,
+              day: '',
+              exercises
+            }));
+
+            resolve({
+              id: generateUUID(),
+              name: programName,
+              workouts,
+              history: []
+            });
           }
-
-          // Convert map to workouts array
-          const workouts: Workout[] = Array.from(workoutMap.entries()).map(([name, exercises]) => ({
-            name,
-            day: '',
-            exercises
-          }));
-
-          resolve({
-            id: generateUUID(),
-            name: programName,
-            workouts,
-            history: []
-          });
         } catch (error) {
-          reject(error);
+          if (options?.continueOnError) {
+            // Create a minimal valid program with the error
+            const program: WorkoutProgram = {
+              id: generateUUID(),
+              name: 'CSV Program (with errors)',
+              workouts: [],
+              history: []
+            };
+            
+            // Add the error to the errors array
+            if (error instanceof Error) {
+              errors.push({
+                row: 0,
+                message: error.message,
+                critical: true
+              });
+            } else {
+              errors.push({
+                row: 0,
+                message: 'An unexpected error occurred while parsing the CSV file.',
+                critical: true
+              });
+            }
+            
+            resolve(program);
+          } else {
+            reject(error);
+          }
         }
       },
       error: (error) => {

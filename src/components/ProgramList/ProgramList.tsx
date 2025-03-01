@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutProgram } from '../../types';
-import { getAllWorkoutPrograms } from '../../lib/indexedDB';
+import { serviceFactory } from '../../services';
 import styles from './program-list.module.css';
 
 interface ProgramListProps {
@@ -22,10 +22,14 @@ export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms
       return;
     }
 
-    // Otherwise load from IndexedDB
+    // Otherwise load from storage service
     const loadPrograms = async () => {
       try {
-        const loadedPrograms = await getAllWorkoutPrograms();
+        // Get the local storage service
+        const storageService = serviceFactory.getLocalStorageService();
+        
+        // Get all workout programs
+        const loadedPrograms = await storageService.getAllWorkoutPrograms();
         setPrograms(loadedPrograms);
       } catch (err) {
         setError('Failed to load workout programs. Please try again later.');

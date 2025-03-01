@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { WorkoutProgram, type Workout, type Exercise } from '../../types';
-import { getWorkoutProgram } from '../../lib/indexedDB';
+import { serviceFactory } from '../../services';
 import { WorkoutSession } from '../WorkoutSession';
 import styles from './workout-details.module.css';
 
@@ -41,7 +41,12 @@ export const WorkoutDetails: React.FC<Props> = ({ programId }) => {
   useEffect(() => {
     const loadProgram = async () => {
       try {
-        const loadedProgram = await getWorkoutProgram(programId);
+        // Get the local storage service
+        const storageService = serviceFactory.getLocalStorageService();
+        
+        // Get the workout program
+        const loadedProgram = await storageService.getWorkoutProgram(programId);
+        
         if (loadedProgram) {
           setProgram(loadedProgram);
         } else {

@@ -3,45 +3,51 @@ import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { ExcelUploader } from './components/ExcelUploader';
 import { ProgramList } from './components/ProgramList';
 import { WorkoutDetails } from './components/WorkoutDetails';
-import { initDB, getAllWorkoutPrograms } from './lib/indexedDB';
+import { serviceFactory } from './services';
 import type { WorkoutProgram } from './types';
+import { AuthProvider } from './components/Auth/AuthContext';
 import './App.css';
 
 /**
  * Main application content component.
- * Handles database initialization, program loading, and UI state.
+ * Handles service initialization, program loading, and UI state.
  */
 export function AppContent() {
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error' | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [dbInitialized, setDbInitialized] = useState(false);
+  const [servicesInitialized, setServicesInitialized] = useState(false);
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
 
-  // Initialize IndexedDB
+  // Initialize services
   useEffect(() => {
-    const initializeDB = async () => {
+    const initializeServices = async () => {
       try {
-        await initDB();
-        setDbInitialized(true);
+        // Initialize all services
+        await serviceFactory.initializeServices();
+        setServicesInitialized(true);
       } catch (error) {
-        console.error("Failed to initialize IndexedDB:", error);
+        console.error("Failed to initialize services:", error);
         // Still set initialized to true to allow the app to proceed
         // The individual components will handle their own errors
-        setDbInitialized(true);
+        setServicesInitialized(true);
       }
     };
-    initializeDB();
+    initializeServices();
   }, []);
 
-  // Load programs after DB is initialized
+  // Load programs after services are initialized
   useEffect(() => {
-    if (!dbInitialized) return;
+    if (!servicesInitialized) return;
     
     const loadPrograms = async () => {
       try {
-        const loadedPrograms = await getAllWorkoutPrograms();
+        // Get the local storage service
+        const storageService = serviceFactory.getLocalStorageService();
+        
+        // Get all workout programs
+        const loadedPrograms = await storageService.getAllWorkoutPrograms();
         setPrograms(loadedPrograms);
       } catch (error) {
         console.error("Failed to load programs:", error);
@@ -51,7 +57,7 @@ export function AppContent() {
     };
     
     loadPrograms();
-  }, [refreshTrigger, dbInitialized]);
+  }, [refreshTrigger, servicesInitialized]);
 
   const handleUploadSuccess = useCallback(() => {
     setMessage('Workout program uploaded successfully!');
@@ -70,13 +76,8 @@ export function AppContent() {
     setMessageType('error');
   }, []);
 
-  const WorkoutDetailsWrapper = () => {
-    const { programId } = useParams<{ programId: string }>();
-    return <WorkoutDetails programId={programId || ''} />;
-  };
-
-  // Show loading state while DB is initializing
-  if (!dbInitialized) {
+  // Show loading state while services are initializing
+  if (!servicesInitialized) {
     return (
       <div className="App">
         <header role="banner">
@@ -139,12 +140,14 @@ export function AppContent() {
  */
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppContent />} />
-        <Route path="/program/:programId" element={<WorkoutDetailsWrapper />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppContent />} />
+          <Route path="/program/:programId" element={<WorkoutDetailsWrapper />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

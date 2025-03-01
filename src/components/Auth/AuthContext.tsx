@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { getCurrentUser, onAuthChange, signIn, signOut, registerUser } from '../../firebase/auth';
-import { initSync } from '../../firebase/sync';
+import { serviceFactory } from '../../services';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -23,19 +22,23 @@ export const useAuth = (): AuthContextType => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(getCurrentUser());
+  // Get service instances
+  const authService = serviceFactory.getAuthService();
+  const syncService = serviceFactory.getSyncService();
+  
+  const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = onAuthChange((user) => {
+    const unsubscribe = authService.onAuthChange((user: User | null) => {
       setCurrentUser(user);
       setIsLoading(false);
       
       // Initialize sync when user is authenticated
       if (user) {
-        initSync().catch(err => {
+        syncService.initSync().catch((err: Error) => {
           console.error('Error initializing sync:', err);
         });
       }
@@ -43,13 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+  }, [authService, syncService]);
 
   const login = async (email: string, password: string): Promise<void> => {
     setError(null);
     setIsLoading(true);
     try {
-      await signIn(email, password);
+      await authService.signIn(email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
       throw err;
@@ -61,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async (): Promise<void> => {
     setError(null);
     try {
-      await signOut();
+      await authService.signOut();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during logout');
       throw err;
@@ -72,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     setIsLoading(true);
     try {
-      await registerUser(email, password);
+      await authService.registerUser(email, password);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during registration');
       throw err;

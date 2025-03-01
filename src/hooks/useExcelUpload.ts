@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { parseExcelFile } from '../features/excelParsing/excelParser';
 import { WorkoutProgram, ColumnMappingConfig } from '../types';
-import { storeWorkoutProgram } from '../lib/indexedDB';
+import { serviceFactory } from '../services';
 
 /**
  * Interface for the return value of the useExcelUpload hook
@@ -121,7 +121,18 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
     setIsLoading(true);
     
     try {
-      await storeWorkoutProgram(previewData);
+      // Get the local storage service from the service factory
+      const storageService = serviceFactory.getLocalStorageService();
+      
+      // Store the workout program
+      await storageService.storeWorkoutProgram(previewData);
+      
+      // If we're online, sync to remote storage
+      const syncService = serviceFactory.getSyncService();
+      if (syncService.isOnline()) {
+        await syncService.syncToRemote();
+      }
+      
       setSuccess(true);
       if (onSuccess) {
         onSuccess();

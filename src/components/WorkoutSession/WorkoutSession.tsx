@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './workout-session.module.css';
 import type { Workout, CompletedSet, CompletedExercise, WorkoutSession as WorkoutSessionType } from '../../types';
-import { storeWorkoutSession, getWorkoutProgram, storeWorkoutProgram } from '../../lib/indexedDB';
+import { serviceFactory } from '../../services';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
@@ -280,15 +280,30 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
     };
 
     try {
-      await storeWorkoutSession(workoutSession);
+      // Get the local storage service
+      const storageService = serviceFactory.getLocalStorageService();
+      
+      // Store the workout session
+      await storageService.storeWorkoutSession(workoutSession);
 
-      const program = await getWorkoutProgram(programId);
+      // Get the workout program
+      const program = await storageService.getWorkoutProgram(programId);
+      
       if (program) {
+        // Update the program with the new session
         const updatedProgram = {
           ...program,
           history: [...program.history, workoutSession],
         };
-        await storeWorkoutProgram(updatedProgram);
+        
+        // Store the updated program
+        await storageService.storeWorkoutProgram(updatedProgram);
+        
+        // If we're online, sync to remote storage
+        const syncService = serviceFactory.getSyncService();
+        if (syncService.isOnline()) {
+          await syncService.syncToRemote();
+        }
       } else {
         console.error('Program not found when trying to update history');
       }

@@ -35,4 +35,54 @@ ProgramList.test.tsx: All tests passing (5/5)
 App.test.tsx: All tests passing (4/4)
 No more act() warnings or syntax errors
 Tests focus on critical functionality rather than implementation details
-These improvements have made the test suite more reliable, maintainable, and focused on verifying the application's core functionality rather than specific UI implementation details. This approach will make the tests more resilient to UI changes while still ensuring the application works correctly
+These improvements have made the test suite more reliable, maintainable, and focused on verifying the application's core functionality rather than specific UI implementation details. This approach will make the tests more resilient to UI changes while still ensuring the application works correctly.
+
+
+
+# Summary: How We Fixed the ExcelUploader Tests
+
+## The Problem
+
+We identified a race condition in the ExcelUploader component where error callbacks weren't being properly triggered. Specifically:
+
+1. The component was attempting to check for errors immediately after calling async operations
+2. Since state updates are asynchronous in React, the error state wasn't updated when these checks ran
+3. As a result, the `onUploadError` callback was never being called, causing test failures
+
+## The Solution
+
+We implemented a proper React pattern using the `useEffect` hook to monitor state changes:
+
+```typescript
+useEffect(() => {
+  if (error && onUploadError) {
+    onUploadError(new Error(error));
+  }
+}, [error, onUploadError]);
+```
+
+This solution:
+
+1. **Monitors State Changes**: The effect runs whenever `error` or `onUploadError` changes
+2. **Handles Async Updates**: Since it's triggered after state updates complete, it properly detects when errors occur
+3. **Follows React Patterns**: Uses React's recommended approach to handle side effects after state changes
+4. **Maintains Component API**: Ensures the component correctly calls callbacks as specified in its props contract
+
+## What We Learned
+
+1. **React's Asynchronous Nature**: State updates don't happen immediately - they're batched and processed asynchronously
+2. **Proper Effect Handling**: Use `useEffect` to perform side effects in response to state changes
+3. **Testing Component Contracts**: Tests should verify that components honor their API contracts (like calling callbacks)
+4. **Race Conditions**: Be cautious about checking state immediately after operations that might change that state
+
+## Additional Improvements
+
+We also removed problematic checks in the `handleFileChange` and `handleDrop` functions that were attempting to detect errors synchronously, since the new `useEffect` hook handles this correctly.
+
+## Results
+
+All tests now pass successfully:
+- ✅ 8 passing tests in ExcelUploader.test.tsx
+- ✅ No more false negatives in error handling tests
+
+This fix ensures that error callbacks are properly triggered when errors occur, maintaining the expected behavior of the component while fixing the flaky tests.

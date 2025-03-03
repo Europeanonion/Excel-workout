@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useExcelUpload } from '../../hooks/useExcelUpload';
 import { ColumnMappingConfig, WorkoutProgram } from '../../types';
 import styles from './excel-uploader.module.css';
@@ -42,6 +42,13 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
     reset
   } = useExcelUpload(onUploadSuccess);
 
+  // Add this useEffect to ensure errors trigger the callback:
+  useEffect(() => {
+    if (error && onUploadError) {
+      onUploadError(new Error(error));
+    }
+  }, [error, onUploadError]);
+
   /**
    * Handle file selection from input
    */
@@ -50,11 +57,7 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
     if (files && files.length > 0) {
       try {
         await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
-        
-        // If there's an error callback and an error occurred, call it
-        if (error && onUploadError) {
-          onUploadError(new Error(error));
-        }
+        // Remove the error check here - the useEffect will handle it
       } finally {
         // Clear file input after processing
         if (fileInputRef.current) {
@@ -103,11 +106,7 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
     if (files && files.length > 0) {
       try {
         await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
-        
-        // If there's an error callback and an error occurred, call it
-        if (error && onUploadError) {
-          onUploadError(new Error(error));
-        }
+        // Remove the error check here - the useEffect will handle it
       } finally {
         // Clear file input
         if (fileInputRef.current) {

@@ -116,6 +116,10 @@ export class ServiceFactory {
           break;
         case 'testing':
           this.localStorageService = new MockStorageService();
+          // Auto-initialize in testing environment
+          this.localStorageService.initStorage().catch(err => {
+            console.warn('Failed to auto-initialize MockStorageService:', err);
+          });
           break;
       }
     }

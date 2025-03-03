@@ -1,4 +1,3 @@
-
 export interface Exercise {
   name: string;
   sets: number;
@@ -42,6 +41,7 @@ export interface WorkoutProgram {
   userId?: string; // Firebase user ID (optional for local-only programs)
   createdAt?: any; // Timestamp for creation date
   updatedAt?: any; // Timestamp for last update
+  deleted?: boolean; // Flag to mark as deleted for soft deletion
 }
 
 export interface WorkoutSession {
@@ -52,11 +52,16 @@ export interface WorkoutSession {
   exercises: CompletedExercise[];
   totalLoad: number;
   notes: string | null;
+  userId?: string; // Firebase user ID
+  createdAt?: any; // Timestamp for creation date
+  updatedAt?: any; // Timestamp for last update
+  deleted?: boolean; // Flag to mark as deleted for soft deletion
 }
 
 export interface CompletedExercise {
   exerciseName: string;
   sets: CompletedSet[];
+  notes?: string | null;
 }
 
 export interface CompletedSet {

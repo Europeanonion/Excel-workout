@@ -1,13 +1,41 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ProgramList } from './ProgramList';
-import { getAllWorkoutPrograms } from '../../lib/indexedDB';
 import { WorkoutProgram } from '../../types';
 import { MemoryRouter } from 'react-router-dom';
+import { serviceFactory } from '../../services';
+// Temporarily suppress React warnings
+const originalError = console.error;
+const originalWarn = console.warn;
 
-// Mock the indexedDB functions
-jest.mock('../../lib/indexedDB', () => ({
-  getAllWorkoutPrograms: jest.fn(),
+beforeAll(() => {
+  // Suppress act warnings
+  console.error = (...args) => {
+    if (/Warning:.*ReactDOMTestUtils.act/.test(args[0])) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+  
+  // Suppress React Router warnings
+  console.warn = (...args) => {
+    if (/React Router Future Flag Warning/.test(args[0])) {
+      return;
+    }
+    originalWarn.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
+  console.warn = originalWarn;
+});
+
+// Mock the services module
+jest.mock('../../services', () => ({
+  serviceFactory: {
+    getLocalStorageService: jest.fn()
+  }
 }));
 
 describe('ProgramList', () => {
@@ -50,19 +78,39 @@ describe('ProgramList', () => {
     },
   ];
 
+  // Mock storage service
+  let mockStorageService: any;
+
   beforeEach(() => {
+    // Create mock storage service
+    mockStorageService = {
+      initStorage: jest.fn().mockResolvedValue(undefined),
+      getAllWorkoutPrograms: jest.fn(),
+      getWorkoutProgram: jest.fn().mockResolvedValue(null),
+      storeWorkoutProgram: jest.fn().mockResolvedValue(undefined),
+      deleteWorkoutProgram: jest.fn().mockResolvedValue(undefined),
+      storeWorkoutSession: jest.fn().mockResolvedValue(undefined),
+      getWorkoutSessions: jest.fn().mockResolvedValue([])
+    };
+    
+    // Setup the service factory mock
+    (serviceFactory.getLocalStorageService as jest.Mock).mockReturnValue(mockStorageService);
+    
+    // Clear all mocks before each test
     jest.clearAllMocks();
   });
 
-  it('shows loading state initially', () => {
-    (getAllWorkoutPrograms as jest.Mock).mockImplementation(
+  it('shows loading state initially', async () => {
+    // Mock the function to return a promise that never resolves
+    mockStorageService.getAllWorkoutPrograms.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
     );
 
     render(
-    <MemoryRouter>
+      <MemoryRouter>
         <ProgramList />
-    </MemoryRouter>);
+      </MemoryRouter>
+    );
 
     expect(screen.getByLabelText('Loading workout programs')).toBeInTheDocument();
     expect(screen.getByText('Loading programs...')).toBeInTheDocument();
@@ -70,36 +118,39 @@ describe('ProgramList', () => {
 
   it('shows error message when loading fails', async () => {
     const error = new Error('Failed to load programs');
-    (getAllWorkoutPrograms as jest.Mock).mockRejectedValue(error);
+    mockStorageService.getAllWorkoutPrograms.mockRejectedValue(error);
 
     render(
-        <MemoryRouter>
-            <ProgramList />
-        </MemoryRouter>);
+      <MemoryRouter>
+        <ProgramList />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
       expect(
         screen.getByText('Failed to load workout programs. Please try again later.')
       ).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
   });
 
   it('shows empty state when no programs exist', async () => {
-    (getAllWorkoutPrograms as jest.Mock).mockResolvedValue([]);
+    mockStorageService.getAllWorkoutPrograms.mockResolvedValue([]);
 
     render(
-        <MemoryRouter>
-            <ProgramList />
-        </MemoryRouter>);
+      <MemoryRouter>
+        <ProgramList />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
       expect(screen.getByText('No workout programs found.')).toBeInTheDocument();
       expect(screen.getByText('Upload an Excel file to get started.')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
   });
 
     it('displays workout programs when they exist', async () => {
-        (getAllWorkoutPrograms as jest.Mock).mockResolvedValue(mockPrograms);
+        mockStorageService.getAllWorkoutPrograms.mockResolvedValue(mockPrograms);
+        
         render(
             <MemoryRouter>
                 <ProgramList />
@@ -122,11 +173,11 @@ describe('ProgramList', () => {
 
             const viewButtons = screen.getAllByText('View Program');
             expect(viewButtons).toHaveLength(2);
-        });
+        }, { timeout: 1000 });
     });
 
     it('applies correct accessibility attributes', async () => {
-        (getAllWorkoutPrograms as jest.Mock).mockResolvedValue(mockPrograms);
+        mockStorageService.getAllWorkoutPrograms.mockResolvedValue(mockPrograms);
 
         render(
             <MemoryRouter>
@@ -143,6 +194,6 @@ describe('ProgramList', () => {
             const buttons = screen.getAllByRole('button');
             expect(buttons[0]).toHaveAccessibleName('View Test Program 1 details');
             expect(buttons[1]).toHaveAccessibleName('View Test Program 2 details');
-        });
+        }, { timeout: 1000 });
     });
 });

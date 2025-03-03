@@ -13,6 +13,11 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
+// Check if Firebase API Key is available
+if (!firebaseConfig.apiKey && process.env.NODE_ENV !== 'test') {
+  throw new Error("Missing Firebase API Key");
+}
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);

@@ -1,11 +1,16 @@
 import React from 'react';
-import { render, screen, waitFor, within } from '@testing-library/react'; // Added within
-import { act } from '@testing-library/react'; // Correct import for act
+import { render, screen, waitFor, within } from '@testing-library/react';
+import { act } from 'react'; // Import act from React instead of react-dom/test-utils
 import { WorkoutDetails } from './WorkoutDetails';
-import { getWorkoutProgram } from '../../lib/indexedDB';
+import { serviceFactory } from '../../services';
 import type { WorkoutProgram } from '../../types';
 
-jest.mock('../../lib/indexedDB');
+// Mock the services module
+jest.mock('../../services', () => ({
+  serviceFactory: {
+    getLocalStorageService: jest.fn()
+  }
+}));
 
 const mockWorkoutProgram: WorkoutProgram = {
   id: 'test-program-id',
@@ -45,20 +50,40 @@ const mockWorkoutProgram: WorkoutProgram = {
   ],
 };
 
-const mockedGetWorkoutProgram = getWorkoutProgram as jest.MockedFunction<
-  typeof getWorkoutProgram
->;
+// Setup before each test
+beforeEach(() => {
+  // Mock the storage service
+  const mockStorageService = {
+    initStorage: jest.fn().mockResolvedValue(undefined),
+    getWorkoutProgram: jest.fn(),
+    storeWorkoutProgram: jest.fn().mockResolvedValue(undefined),
+    getAllWorkoutPrograms: jest.fn().mockResolvedValue([]),
+    deleteWorkoutProgram: jest.fn().mockResolvedValue(undefined),
+    storeWorkoutSession: jest.fn().mockResolvedValue(undefined),
+    getWorkoutSessions: jest.fn().mockResolvedValue([])
+  };
+  
+  // Setup the service factory mock
+  (serviceFactory.getLocalStorageService as jest.Mock).mockReturnValue(mockStorageService);
+  
+  // Clear all mocks before each test
+  jest.clearAllMocks();
+});
 
 test('renders loading state', async () => {
-  mockedGetWorkoutProgram.mockImplementation(
+  // Setup the mock to delay resolution
+  const mockStorageService = serviceFactory.getLocalStorageService();
+  (mockStorageService.getWorkoutProgram as jest.Mock).mockImplementation(
     () => new Promise((resolve) => setTimeout(() => resolve(undefined), 50))
   );
 
-  render(<WorkoutDetails programId="test-program-id" />);
+  await act(async () => {
+    render(<WorkoutDetails programId="test-program-id" />);
+  });
 
   expect(screen.getByText(/Loading program.../i)).toBeInTheDocument();
 
-  // Fix 2: Use proper waitFor with adequate timeout
+  // Use proper waitFor with adequate timeout
   await waitFor(() =>
     expect(screen.queryByText(/Loading program.../i)).not.toBeInTheDocument(),
     { timeout: 200 }
@@ -66,19 +91,28 @@ test('renders loading state', async () => {
 });
 
 test('renders error state', async () => {
-  mockedGetWorkoutProgram.mockRejectedValue(new Error('Failed to load program'));
-  await act(() => {
-      render(<WorkoutDetails programId="test-program-id" />);
+  // Setup the mock to reject
+  const mockStorageService = serviceFactory.getLocalStorageService();
+  (mockStorageService.getWorkoutProgram as jest.Mock).mockRejectedValue(
+    new Error('Failed to load program')
+  );
+  
+  await act(async () => {
+    render(<WorkoutDetails programId="test-program-id" />);
   });
+  
   await waitFor(() =>
     expect(screen.getByText(/Failed to load workout program/i)).toBeInTheDocument()
   );
 });
 
 test('renders workout program details', async () => {
-  mockedGetWorkoutProgram.mockResolvedValue(mockWorkoutProgram);
+  // Setup the mock to resolve with program data
+  const mockStorageService = serviceFactory.getLocalStorageService();
+  (mockStorageService.getWorkoutProgram as jest.Mock).mockResolvedValue(mockWorkoutProgram);
+  
   await act(async () => {
-      render(<WorkoutDetails programId="test-program-id" />);
+    render(<WorkoutDetails programId="test-program-id" />);
   });
 
   await waitFor(() => {
@@ -90,8 +124,11 @@ test('renders workout program details', async () => {
 });
 
 test('renders workout history', async () => {
-  mockedGetWorkoutProgram.mockResolvedValue(mockWorkoutProgram);
-  await act(() => {
+  // Setup the mock to resolve with program data
+  const mockStorageService = serviceFactory.getLocalStorageService();
+  (mockStorageService.getWorkoutProgram as jest.Mock).mockResolvedValue(mockWorkoutProgram);
+  
+  await act(async () => {
     render(<WorkoutDetails programId="test-program-id" />);
   });
 
@@ -101,10 +138,13 @@ test('renders workout history', async () => {
 });
 
 test('renders no workout history message', async () => {
+  // Setup the mock to resolve with program data without history
   const noHistoryProgram = { ...mockWorkoutProgram, history: [] };
-  mockedGetWorkoutProgram.mockResolvedValue(noHistoryProgram);
-  await act(() => {
-      render(<WorkoutDetails programId="test-program-id" />);
+  const mockStorageService = serviceFactory.getLocalStorageService();
+  (mockStorageService.getWorkoutProgram as jest.Mock).mockResolvedValue(noHistoryProgram);
+  
+  await act(async () => {
+    render(<WorkoutDetails programId="test-program-id" />);
   });
 
   await waitFor(() => {

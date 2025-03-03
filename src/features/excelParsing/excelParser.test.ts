@@ -14,7 +14,7 @@ describe('parseExcelFile', () => {
     worksheet.addRow(['Program Name', 'Test Program']);
     worksheet.addRow(['Workout', 'Exercise', 'Sets', 'Reps', 'Load', 'RPE', 'Rest', 'Notes']);
 
-    // Add sample workout data
+    // Add sample workout data with all values as strings to avoid type issues
     worksheet.addRow(['Push', 'Bench Press', '3', '8-12', '100', '8', '120', 'Keep tight form']);
     worksheet.addRow(['Push', 'Shoulder Press', '3', '8-12', '60', '7', '90', '']);
 
@@ -93,14 +93,15 @@ describe('parseExcelFile', () => {
 
     worksheet.addRow(['Program Name', 'Test Program']);
     worksheet.addRow(['Workout', 'Exercise', 'Sets', 'Reps', 'Load', 'RPE', 'Rest', 'Notes']);
-    worksheet.addRow(['Push', 'Bench Press', 'invalid', '8-12', 'abc', '8', 'xyz', '']);
+    worksheet.addRow(['Push', 'Bench Press', 'invalid', '8-12', 'abc', 'xyz', 'invalid-rest', '']);
 
     const buffer = await invalidWorkbook.xlsx.writeBuffer();
-     const invalidFile = {
+    const invalidFile = {
       arrayBuffer: () => Promise.resolve(buffer),
       name: 'invalid.xlsx',
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     } as unknown as File;
-    await expect(parseExcelFile(invalidFile)).rejects.toThrow('Invalid data type');
+
+    await expect(parseExcelFile(invalidFile)).rejects.toThrow(/Invalid data type/);
   });
 });

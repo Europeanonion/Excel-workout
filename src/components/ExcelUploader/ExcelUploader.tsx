@@ -168,17 +168,20 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
    * Render preview of the parsed data
    */
   const renderPreview = (data: WorkoutProgram) => {
+    // Ensure workouts array is defined
+    const workouts = data.workouts || [];
+    
     return (
       <div className={styles.previewContainer}>
         <h3>Preview: {data.name}</h3>
         <div className={styles.previewContent}>
           <p><strong>Program ID:</strong> {data.id}</p>
-          <p><strong>Workouts:</strong> {data.workouts.length}</p>
+          <p><strong>Workouts:</strong> {workouts.length}</p>
           <div className={styles.workoutsList}>
-            {data.workouts.map((workout, index) => (
+            {workouts.map((workout, index) => (
               <div key={index} className={styles.workoutPreview}>
                 <h4>{workout.name}</h4>
-                <p>{workout.exercises.length} exercises</p>
+                <p>{workout.exercises?.length || 0} exercises</p>
               </div>
             ))}
           </div>

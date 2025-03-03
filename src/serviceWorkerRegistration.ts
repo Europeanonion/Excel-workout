@@ -22,8 +22,43 @@ type Config = {
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
 };
 
+// Track online/offline status
+let isOnline = navigator.onLine;
+
+// Custom event for online status changes that components can listen to
+export const onlineStatusChanged = new CustomEvent('onlineStatusChanged', {
+  detail: { isOnline }
+});
+
+// Function to dispatch online status change events
+const updateOnlineStatus = () => {
+  const wasOnline = isOnline;
+  isOnline = navigator.onLine;
+  
+  if (wasOnline !== isOnline) {
+    onlineStatusChanged.detail.isOnline = isOnline;
+    window.dispatchEvent(onlineStatusChanged);
+    
+    console.log(`App is now ${isOnline ? 'online' : 'offline'}`);
+    
+    // If we're back online, attempt to sync data
+    if (isOnline && 'serviceWorker' in navigator && 'SyncManager' in window) {
+      navigator.serviceWorker.ready.then((registration) => {
+        // Trigger background sync when coming back online
+        // Using type assertion since the Sync API is not in standard TypeScript definitions
+        const syncManager = (registration as any).sync;
+        if (syncManager) {
+          syncManager.register('syncData').catch((err: Error) => {
+            console.error('Background sync registration failed:', err);
+          });
+        }
+      });
+    }
+  }
+};
+
 export function register(config?: Config) {
-  if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(process.env.PUBLIC_URL || '', window.location.href);
     if (publicUrl.origin !== window.location.origin) {
@@ -33,8 +68,19 @@ export function register(config?: Config) {
       return;
     }
 
+    // Set up online/offline listeners
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    
+    // Initialize online status
+    updateOnlineStatus();
+
     window.addEventListener('load', () => {
-      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+      // In development, use the default CRA service worker
+      // In production, we'll use a custom service worker with Workbox
+      const swUrl = process.env.NODE_ENV === 'production'
+        ? `${process.env.PUBLIC_URL}/service-worker.js`
+        : `${process.env.PUBLIC_URL}/service-worker.js`;
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
@@ -42,11 +88,30 @@ export function register(config?: Config) {
 
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
+        navigator.serviceWorker.ready.then((registration) => {
           console.log(
             'This web app is being served cache-first by a service ' +
               'worker. To learn more, visit https://cra.link/PWA'
           );
+          
+          // Register for periodic sync if supported
+          if ('periodicSync' in registration) {
+            try {
+              const periodicSync = (registration as any).periodicSync;
+              
+              // Try to register for periodic sync (for future data syncing)
+              if (periodicSync) {
+                periodicSync.register({
+                  tag: 'periodic-sync',
+                  minInterval: 24 * 60 * 60 * 1000 // Once per day
+                }).catch((err: Error) => {
+                  console.log('Periodic Sync could not be registered:', err);
+                });
+              }
+            } catch (err) {
+              console.log('Periodic Sync is not supported:', err);
+            }
+          }
         });
       } else {
         // Is not localhost. Just register service worker

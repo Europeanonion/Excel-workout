@@ -1,0 +1,180 @@
+.promptContainer {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 16px;
+}
+
+.prompt {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.prompt h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 18px;
+}
+
+.prompt p {
+  margin-bottom: 16px;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.installButton {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.installButton:hover {
+  background-color: #3367d6;
+}
+
+.laterButton {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.laterButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.instructions {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 16px 16px 16px 36px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+}
+
+.instructions li:last-child {
+  margin-bottom: 0;
+}
+
+.shareIcon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+/* iOS-specific styles */
+@supports (-webkit-touch-callout: none) {
+  .prompt {
+    border-radius: 14px;
+  }
+  
+  .installButton, .laterButton {
+    border-radius: 8px;
+    font-weight: 600;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .prompt {
+    background-color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .prompt h3 {
+    color: #fff;
+  }
+  
+  .prompt p {
+    color: #ddd;
+  }
+  
+  .closeButton {
+    color: #bbb;
+  }
+  
+  .closeButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .laterButton {
+    color: #bbb;
+    border-color: #555;
+  }
+  
+  .laterButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .instructions {
+    background-color: #444;
+    color: #ddd;
+  }
+}

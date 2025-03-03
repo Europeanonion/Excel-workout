@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
 import { ExcelUploader } from './components/ExcelUploader';
 import { ProgramList } from './components/ProgramList';
 import { WorkoutDetails } from './components/WorkoutDetails';
+import { OnlineStatusIndicator } from './components/OnlineStatus';
+import InstallPrompt from './components/InstallPrompt';
 import { serviceFactory } from './services';
 import type { WorkoutProgram } from './types';
 import { AuthProvider } from './components/Auth/AuthContext';
@@ -142,6 +144,12 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        {/* PWA Install Prompt */}
+        <InstallPrompt />
+        
+        {/* Online Status Indicator */}
+        <OnlineStatusIndicator />
+        
         <Routes>
           <Route path="/" element={<AppContent />} />
           <Route path="/program/:programId" element={<WorkoutDetailsWrapper />} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, FC, DragEvent } from 'react';
 import styles from './workout-session.module.css';
 import type { Workout, CompletedSet, CompletedExercise, WorkoutSession as WorkoutSessionType } from '../../types';
 import { serviceFactory } from '../../services';
@@ -15,7 +15,7 @@ interface DragInfo {
   setIndex: number;
 }
 
-export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionComplete }) => {
+export const WorkoutSession: FC<Props> = ({ workout, programId, onSessionComplete }) => {
   const [completedSets, setCompletedSets] = useState<{ [exerciseName: string]: CompletedSet[] }>({});
   const [notes, setNotes] = useState<{ [exerciseName: string]: string }>({});
   const [sessionNotes, setSessionNotes] = useState<string>('');
@@ -32,6 +32,23 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
   // Refs for drag and drop
   const dragSourceRef = useRef<HTMLDivElement | null>(null);
   const dragTargetRef = useRef<HTMLDivElement | null>(null);
+
+  // Helper function to check if a set is complete
+  const isSetComplete = (set: CompletedSet): boolean => {
+    return set.reps > 0 && set.load !== null && set.rpe !== null;
+  };
+
+  // Function to calculate exercise progress
+  const calculateExerciseProgress = useCallback((exerciseName: string): number => {
+    const sets = completedSets[exerciseName] || [];
+    if (sets.length === 0) return 0;
+    
+    const exercise = workout.exercises.find(e => e.name === exerciseName);
+    if (!exercise) return 0;
+    
+    const completedSetsCount = sets.filter(isSetComplete).length;
+    return Math.min(100, Math.round((completedSetsCount / exercise.sets) * 100));
+  }, [completedSets, workout.exercises]);
 
   // Calculate overall workout progress
   useEffect(() => {
@@ -52,6 +69,7 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
     
     const progress = Math.round((completedExercisesCount / totalExercises) * 100);
     setWorkoutProgress(progress);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completedSets, workout.exercises]);
 
   // Timer functionality
@@ -131,25 +149,25 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
   };
 
   // Drag and drop handlers
-  const handleDragStart = (exerciseName: string, setIndex: number, e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragStart = (exerciseName: string, setIndex: number, e: DragEvent<HTMLDivElement>) => {
     setDraggedSet({ exerciseName, setIndex });
     dragSourceRef.current = e.currentTarget;
     e.currentTarget.classList.add(styles.setDragging);
   };
 
-  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragEnd = (e: DragEvent<HTMLDivElement>) => {
     if (dragSourceRef.current) {
       dragSourceRef.current.classList.remove(styles.setDragging);
     }
     setDraggedSet(null);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     dragTargetRef.current = e.currentTarget;
   };
 
-  const handleDrop = (exerciseName: string, targetIndex: number, e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (exerciseName: string, targetIndex: number, e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     
     if (!draggedSet) return;
@@ -240,20 +258,7 @@ export const WorkoutSession: React.FC<Props> = ({ workout, programId, onSessionC
     }));
   };
 
-  const isSetComplete = (set: CompletedSet): boolean => {
-    return set.reps > 0 && set.load !== null && set.rpe !== null;
-  };
-
-  const calculateExerciseProgress = (exerciseName: string): number => {
-    const sets = completedSets[exerciseName] || [];
-    if (sets.length === 0) return 0;
-    
-    const exercise = workout.exercises.find(e => e.name === exerciseName);
-    if (!exercise) return 0;
-    
-    const completedSetsCount = sets.filter(isSetComplete).length;
-    return Math.min(100, Math.round((completedSetsCount / exercise.sets) * 100));
-  };
+  // These functions are already defined above, so we're removing the duplicates
 
   const handleFinishWorkout = async () => {
     let totalLoad = 0;

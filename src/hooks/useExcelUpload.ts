@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { parseExcelFile } from '../features/excelParsing/excelParser';
 import { WorkoutProgram, ColumnMappingConfig } from '../types';
 import { serviceFactory } from '../services';
+// Remove static import of parseExcelFile to reduce initial bundle size
 
 /**
  * Interface for the return value of the useExcelUpload hook
@@ -95,12 +95,18 @@ export function useExcelUpload(onSuccess?: () => void): UseExcelUploadResult {
     setIsLoading(true);
     
     try {
-      // Parse the file but don't save it yet - just set it for preview
-      const program: WorkoutProgram = await parseExcelFile(file, columnMapping);
+      // Dynamically import the Excel processor utilities
+      const { processExcelFile, processCSVFile } = await import('../features/excelParsing/excelProcessorUtils');
+      
+      // Parse the file based on its extension
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      const program: WorkoutProgram = fileExtension === '.csv'
+        ? await processCSVFile(file, columnMapping)
+        : await processExcelFile(file, columnMapping);
       setPreviewData(program);
     } catch (err) {
-      const errorMessage = err instanceof Error 
-        ? err.message 
+      const errorMessage = err instanceof Error
+        ? err.message
         : 'An unknown error occurred while processing the file';
       setError(errorMessage);
       setPreviewData(null);

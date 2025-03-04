@@ -9,6 +9,7 @@
     "@types/node": "^16.18.82",
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
+    "cheerio": "^1.0.0",
     "exceljs": "^4.4.0",
     "firebase": "^10.8.0",
     "idb": "^8.0.0",
@@ -29,10 +30,11 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test > test-output.txt 2>&1",
-    "eject": "react-scripts eject"
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test > test-output.txt 2>&1",
+    "eject": "react-scripts eject",
+    "analyze": "ANALYZE=true craco build"
   },
   "eslintConfig": {
     "extends": [
@@ -53,8 +55,11 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@testing-library/react": "^16.2.0",
     "@types/papaparse": "^5.3.15",
-    "@types/uuid": "^9.0.8"
+    "@types/uuid": "^9.0.8",
+    "source-map-explorer": "^2.5.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

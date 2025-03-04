@@ -1,10 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-
 // Firebase configuration
 // Replace with your own Firebase config
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
@@ -17,10 +13,3 @@ const firebaseConfig = {
 if (!firebaseConfig.apiKey && process.env.NODE_ENV !== 'test') {
   throw new Error("Missing Firebase API Key");
 }
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-export { app, db, auth };

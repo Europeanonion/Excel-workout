@@ -177,7 +177,7 @@ export class ServiceFactory {
    */
   public async initializeServices(): Promise<void> {
     // Get all services to create them
-    const authService = this.getAuthService();
+    this.getAuthService(); // Initialize auth service
     const localStorageService = this.getLocalStorageService();
     const remoteStorageService = this.getRemoteStorageService();
     const syncService = this.getSyncService();

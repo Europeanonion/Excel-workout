@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
@@ -7,17 +7,17 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 
-const root = ReactDOM.createRoot(
+const root = createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </ErrorBoundary>
-  </React.StrictMode>
+  </StrictMode>
 );
 
 // Enable service worker for offline capabilities and faster loading

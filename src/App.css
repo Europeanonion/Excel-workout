@@ -99,6 +99,56 @@
   }
 }
 
+/* Loading fallback styles */
+.loading-fallback {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  margin: 1rem 0;
+  animation: pulse 1.5s infinite ease-in-out;
+  position: relative;
+}
+
+.loading-fallback::after {
+  content: "...";
+  display: inline-block;
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes ellipsis {
+  0% {
+    content: ".";
+  }
+  33% {
+    content: "..";
+  }
+  66% {
+    content: "...";
+  }
+}
+
+/* High contrast mode support for loading fallbacks */
+@media (forced-colors: active) {
+  .loading-fallback {
+    border: 2px solid ButtonText;
+    animation: none;
+  }
+}
+
 /* Responsive design */
 @media (max-width: 600px) {
   .App-header {

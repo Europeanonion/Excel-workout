@@ -1,14 +1,21 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
-import { ExcelUploader } from './components/ExcelUploader';
-import { ProgramList } from './components/ProgramList';
-import { WorkoutDetails } from './components/WorkoutDetails';
 import { OnlineStatusIndicator } from './components/OnlineStatus';
 import InstallPrompt from './components/InstallPrompt';
 import { serviceFactory } from './services';
 import type { WorkoutProgram } from './types';
 import { AuthProvider } from './components/Auth/AuthContext';
 import './App.css';
+
+// Lazy-loaded components
+const ExcelUploader = lazy(() => import('./components/ExcelUploader').then(module => ({ default: module.ExcelUploader })));
+const ProgramList = lazy(() => import('./components/ProgramList').then(module => ({ default: module.ProgramList })));
+const WorkoutDetails = lazy(() => import('./components/WorkoutDetails').then(module => ({ default: module.WorkoutDetails })));
+
+// Loading fallback components
+const LoadingFallback = () => <div className="loading-fallback">Loading...</div>;
+const ProgramListFallback = () => <div className="loading-fallback">Loading program list...</div>;
+const WorkoutDetailsFallback = () => <div className="loading-fallback">Loading workout details...</div>;
 
 /**
  * Main application content component.
@@ -111,14 +118,16 @@ export function AppContent() {
           </div>
         )}
         
-        <section role="region" aria-label="Excel file upload">
-          <ExcelUploader
-            onUploadSuccess={handleUploadSuccess}
-            onUploadError={handleUploadError}
-          />
+        <section aria-label="Excel file upload">
+          <Suspense fallback={<LoadingFallback />}>
+            <ExcelUploader
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+            />
+          </Suspense>
         </section>
 
-        <section role="region" aria-label="Workout Programs">
+        <section aria-label="Workout Programs">
           {isLoading ? (
             <p>Loading programs...</p>
           ) : (
@@ -128,7 +137,9 @@ export function AppContent() {
                 <p>Upload an Excel file to get started.</p>
               </>
             ) : (
-              <ProgramList key={`program-list-${refreshTrigger}`} programs={programs} />
+              <Suspense fallback={<ProgramListFallback />}>
+                <ProgramList key={`program-list-${refreshTrigger}`} programs={programs} />
+              </Suspense>
             )
           )}
         </section>
@@ -164,7 +175,11 @@ function App() {
  */
 export function WorkoutDetailsWrapper() {
   const { programId } = useParams<{ programId: string }>();
-  return <WorkoutDetails programId={programId || ''} />;
+  return (
+    <Suspense fallback={<WorkoutDetailsFallback />}>
+      <WorkoutDetails programId={programId || ''} />
+    </Suspense>
+  );
 }
 
 export default App;

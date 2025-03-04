@@ -1,18 +1,17 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  query, 
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
   where,
-  updateDoc,
   deleteDoc,
   onSnapshot,
   Timestamp,
   writeBatch
 } from 'firebase/firestore';
-import { db } from './config';
+import { db } from './firestore-app';
 import { WorkoutProgram } from '../types';
 
 // Collection references

@@ -1,11 +1,11 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
-import { auth } from '../../../firebase/config';
+import { auth } from '../../../firebase/auth-app';
 import { IAuthService } from '../../interfaces';
 
 /**

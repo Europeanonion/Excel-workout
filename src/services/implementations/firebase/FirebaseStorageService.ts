@@ -1,16 +1,16 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  query, 
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
   where,
   deleteDoc,
   Timestamp,
   Firestore
 } from 'firebase/firestore';
-import { db } from '../../../firebase/config';
+import { db } from '../../../firebase/firestore-app';
 import { WorkoutProgram, WorkoutSession } from '../../../types';
 import { IStorageService } from '../../interfaces';
 

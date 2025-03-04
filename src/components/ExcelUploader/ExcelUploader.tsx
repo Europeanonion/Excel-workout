@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { useExcelUpload } from '../../hooks/useExcelUpload';
 import { ColumnMappingConfig, WorkoutProgram } from '../../types';
 import styles from './excel-uploader.module.css';
@@ -12,8 +12,10 @@ interface ExcelUploaderProps {
  * Component for uploading Excel files containing workout programs.
  * Handles file validation, parsing, preview, and error handling.
  * Supports drag and drop, file type validation, and template download.
+ *
+ * Optimized with React.memo to prevent unnecessary re-renders.
  */
-export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
+export const ExcelUploader = memo<ExcelUploaderProps>(({
   onUploadSuccess,
   onUploadError
 }) => {
@@ -50,123 +52,124 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
   }, [error, onUploadError]);
 
   /**
-   * Handle file selection from input
-   */
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      try {
-        await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
-        // Remove the error check here - the useEffect will handle it
-      } finally {
-        // Clear file input after processing
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }
-    }
-  };
-
-  /**
-   * Handle drag enter event
-   */
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  /**
-   * Handle drag leave event
-   */
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  /**
-   * Handle drag over event
-   */
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  /**
-   * Handle drop event
-   */
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      try {
-        await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
-        // Remove the error check here - the useEffect will handle it
-      } finally {
-        // Clear file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }
-    }
-  };
-
-  /**
-   * Reset the file input and state
-   */
-  const handleReset = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    reset();
-  };
-
-  /**
-   * Download the template file
-   */
-  const handleDownloadTemplate = () => {
-    const templateUrl = '/templates/workout-template.csv';
-    const link = document.createElement('a');
-    link.href = templateUrl;
-    link.download = 'workout-template.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  /**
-   * Handle column mapping change
-   */
-  const handleColumnMappingChange = (field: keyof ColumnMappingConfig, value: string) => {
-    setColumnMapping(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  /**
-   * Toggle column mapping visibility
-   */
-  const toggleColumnMapping = () => {
-    setShowColumnMapping(!showColumnMapping);
-  };
-
-  /**
-   * Handle confirmation of preview data
-   */
-  const handleConfirmUpload = async () => {
-    await confirmUpload();
-  };
-
-  /**
-   * Render preview of the parsed data
-   */
-  const renderPreview = (data: WorkoutProgram) => {
+   /**
+    * Handle file selection from input
+    */
+   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const files = e.target.files;
+     if (files && files.length > 0) {
+       try {
+         await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
+         // Remove the error check here - the useEffect will handle it
+       } finally {
+         // Clear file input after processing
+         if (fileInputRef.current) {
+           fileInputRef.current.value = '';
+         }
+       }
+     }
+   }, [uploadExcel, showColumnMapping, columnMapping]);
+ 
+   /**
+    * Handle drag enter event
+    */
+   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+     e.preventDefault();
+     e.stopPropagation();
+     setIsDragging(true);
+   }, []);
+ 
+   /**
+    * Handle drag leave event
+    */
+   const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+     e.preventDefault();
+     e.stopPropagation();
+     setIsDragging(false);
+   }, []);
+ 
+   /**
+    * Handle drag over event
+    */
+   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+     e.preventDefault();
+     e.stopPropagation();
+     setIsDragging(true);
+   }, []);
+ 
+   /**
+    * Handle drop event
+    */
+   const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+     e.preventDefault();
+     e.stopPropagation();
+     setIsDragging(false);
+     
+     const files = e.dataTransfer.files;
+     if (files && files.length > 0) {
+       try {
+         await uploadExcel(files[0], showColumnMapping ? columnMapping : undefined);
+         // Remove the error check here - the useEffect will handle it
+       } finally {
+         // Clear file input
+         if (fileInputRef.current) {
+           fileInputRef.current.value = '';
+         }
+       }
+     }
+   }, [uploadExcel, showColumnMapping, columnMapping]);
+ 
+   /**
+    * Reset the file input and state
+    */
+   const handleReset = useCallback(() => {
+     if (fileInputRef.current) {
+       fileInputRef.current.value = '';
+     }
+     reset();
+   }, [reset]);
+ 
+   /**
+    * Download the template file
+    */
+   const handleDownloadTemplate = useCallback(() => {
+     const templateUrl = '/templates/workout-template.csv';
+     const link = document.createElement('a');
+     link.href = templateUrl;
+     link.download = 'workout-template.csv';
+     document.body.appendChild(link);
+     link.click();
+     document.body.removeChild(link);
+   }, []);
+ 
+   /**
+    * Handle column mapping change
+    */
+   const handleColumnMappingChange = useCallback((field: keyof ColumnMappingConfig, value: string) => {
+     setColumnMapping(prev => ({
+       ...prev,
+       [field]: value
+     }));
+   }, []);
+ 
+   /**
+    * Toggle column mapping visibility
+    */
+   const toggleColumnMapping = useCallback(() => {
+     setShowColumnMapping(prev => !prev);
+   }, []);
+ 
+   /**
+    * Handle confirmation of preview data
+    */
+   const handleConfirmUpload = useCallback(async () => {
+     await confirmUpload();
+   }, [confirmUpload]);
+ 
+   /**
+    * Render preview of the parsed data
+    */
+   const renderPreview = useCallback((data: WorkoutProgram) => {
     // Ensure workouts array is defined
     const workouts = data.workouts || [];
     
@@ -185,14 +188,14 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
             ))}
           </div>
         </div>
-        <button 
+        <button
           onClick={handleConfirmUpload}
           className={styles.confirmButton}
           disabled={isLoading}
         >
           Confirm and Save
         </button>
-        <button 
+        <button
           onClick={handleReset}
           className={styles.resetButton}
           disabled={isLoading}
@@ -201,8 +204,7 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
         </button>
       </div>
     );
-  };
-
+  }, [handleConfirmUpload, handleReset, isLoading]);
   return (
     <div className={styles.container}>
       <h2>Upload Workout Excel File</h2>
@@ -317,4 +319,4 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
       )}
     </div>
   );
-};
+});

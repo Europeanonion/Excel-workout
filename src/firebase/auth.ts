@@ -1,11 +1,11 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
-import { auth } from './config';
+import { auth } from './auth-app';
 
 // Register a new user
 export const registerUser = async (email: string, password: string): Promise<User> => {

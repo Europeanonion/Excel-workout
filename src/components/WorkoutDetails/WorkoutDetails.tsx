@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { WorkoutProgram, type Workout, type Exercise } from '../../types';
 import { serviceFactory } from '../../services';
 import { WorkoutSession } from '../WorkoutSession';
@@ -8,17 +8,8 @@ interface Props {
   programId: string;
 }
 
-const WorkoutComponent: React.FC<{ workout: Workout; programId: string }> = ({ workout, programId }) => (
-  <div className={styles.workout} role="group" aria-labelledby={`workout-${workout.week}-${workout.day}`}>
-    <h3 id={`workout-${workout.week}-${workout.day}`}>{workout.week} - {workout.day}</h3>
-    <WorkoutSession workout={workout} programId={programId} />
-    {workout.exercises.map((exercise, index) => (
-      <ExerciseComponent key={index} exercise={exercise} />
-    ))}
-  </div>
-);
-
-const ExerciseComponent: React.FC<{ exercise: Exercise }> = ({ exercise }) => (
+// Memoized Exercise component to prevent unnecessary re-renders
+const ExerciseComponent = memo<{ exercise: Exercise }>(({ exercise }) => (
   <div className={styles.exercise} role="group" aria-label={`Exercise: ${exercise.name}`}>
     <h4>{exercise.name}</h4>
     <p>Warmup Sets: {exercise.warmupSets ?? 'N/A'}</p>
@@ -31,9 +22,21 @@ const ExerciseComponent: React.FC<{ exercise: Exercise }> = ({ exercise }) => (
     <p>Substitution 2: {exercise.substitution2 ?? 'N/A'}</p>
     <p>Notes: {exercise.notes ?? 'N/A'}</p>
   </div>
-);
+));
 
-export const WorkoutDetails: React.FC<Props> = ({ programId }) => {
+// Memoized Workout component to prevent unnecessary re-renders
+const WorkoutComponent = memo<{ workout: Workout; programId: string }>(({ workout, programId }) => (
+  <div className={styles.workout} role="group" aria-labelledby={`workout-${workout.week}-${workout.day}`}>
+    <h3 id={`workout-${workout.week}-${workout.day}`}>{workout.week} - {workout.day}</h3>
+    <WorkoutSession workout={workout} programId={programId} />
+    {workout.exercises.map((exercise, index) => (
+      <ExerciseComponent key={index} exercise={exercise} />
+    ))}
+  </div>
+));
+
+// Memoized WorkoutDetails component
+export const WorkoutDetails = memo<Props>(({ programId }) => {
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,4 +105,4 @@ export const WorkoutDetails: React.FC<Props> = ({ programId }) => {
       )}
     </div>
   );
-};
+});

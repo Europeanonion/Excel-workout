@@ -1,26 +1,22 @@
 import { IAuthService, ISyncService, IStorageService } from '../../interfaces';
 import { WorkoutProgram, WorkoutSession } from '../../../types';
 import { debounce } from 'lodash';
-import { 
-  onSnapshot, 
-  query, 
-  where, 
-  collection, 
-  Firestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
+import {
+  onSnapshot,
+  query,
+  where,
+  collection,
+  Firestore,
+  doc,
+  getDoc,
   updateDoc,
-  serverTimestamp,
-  Timestamp,
   writeBatch,
-  DocumentReference,
   QuerySnapshot,
   DocumentData,
   Unsubscribe,
   getDocs
 } from 'firebase/firestore';
-import { db } from '../../../firebase/config';
+import { db } from '../../../firebase/firestore-app';
 
 /**
  * Represents a pending operation for offline sync

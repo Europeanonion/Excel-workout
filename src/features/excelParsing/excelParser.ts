@@ -1,7 +1,41 @@
-import * as ExcelJS from 'exceljs';
+// Remove static imports of heavy libraries
 import { v4 as uuidv4 } from 'uuid';
-import * as Papa from 'papaparse';
 import { Exercise, WorkoutProgram, Workout, ColumnMappingConfig } from '../../types';
+
+// Define types for dynamically imported libraries
+interface Workbook {
+  xlsx: {
+    load: (buffer: ArrayBuffer) => Promise<void>;
+  };
+  worksheets: Worksheet[]; // Changed from getWorksheet to worksheets array
+  getWorksheet: (index: number) => Worksheet | undefined;
+}
+
+interface Worksheet {
+  rowCount: number;
+  getRow: (rowNumber: number) => Row;
+  eachRow: (callback: (row: any, rowNumber: number) => void) => void; // Changed row type to any
+}
+
+interface Row {
+  values: any; // Changed from any[] to any to accommodate both array and object
+  getCell: (index: number) => { value: any };
+}
+
+interface ExcelJS {
+  Workbook: new () => Workbook;
+}
+
+interface PapaParseConfig {
+  header: boolean;
+  skipEmptyLines: boolean;
+  complete: (results: { data: any[]; errors: any[] }) => void;
+  error: (error: any) => void;
+}
+
+interface PapaParse {
+  parse: (file: File, config: PapaParseConfig) => void;
+}
 
 /**
  * UUID generation for workout programs
@@ -119,7 +153,7 @@ interface ColumnMapping {
  * @param columnMapping Custom column mapping configuration
  * @returns An object containing the header row number and column mapping
  */
-function detectHeaderRow(worksheet: ExcelJS.Worksheet, columnMapping: ColumnMappingConfig): { headerRowNumber: number; columnMapping: ColumnMapping } {
+function detectHeaderRow(worksheet: Worksheet, columnMapping: ColumnMappingConfig): { headerRowNumber: number; columnMapping: ColumnMapping } {
   // Convert column mapping to lowercase for case-insensitive matching
   const normalizedColumnMapping: Record<string, string> = {};
   Object.entries(columnMapping).forEach(([key, value]) => {
@@ -239,7 +273,7 @@ const validateRest = (value: any, rowIndex: number): number => {
  * @param headerRowNumber The detected header row number
  * @returns The program name
  */
-function extractProgramName(worksheet: ExcelJS.Worksheet, headerRowNumber: number): string {
+function extractProgramName(worksheet: Worksheet, headerRowNumber: number): string {
   // Try to find program name in cell with "Program Name" label
   for (let rowNumber = 1; rowNumber < headerRowNumber; rowNumber++) {
     const row = worksheet.getRow(rowNumber);
@@ -274,26 +308,30 @@ function extractProgramName(worksheet: ExcelJS.Worksheet, headerRowNumber: numbe
  * @returns A WorkoutProgram object
  */
 async function parseExcelWorkbook(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
-  const workbook = new ExcelJS.Workbook();
+  // Add magic comments to explicitly name the chunk and control loading
+  const exceljs = await import(/* webpackChunkName: "excel-parser" */ 'exceljs') as unknown as { Workbook: ExcelJS['Workbook'] };
+  
+  const workbook = new exceljs.Workbook();
   const buffer = await file.arrayBuffer();
   await workbook.xlsx.load(buffer);
   
-  const worksheet = workbook.getWorksheet(1);
+  // Here's the key change - use type assertion to make TypeScript happy
+  const worksheet = workbook.worksheets[0] as any as Worksheet;
   if (!worksheet || worksheet.rowCount < 2) {
     throw new Error('Invalid Excel file format. The file appears to be empty or improperly formatted.');
   }
 
-  // Detect header row and column mapping
-  const { headerRowNumber, columnMapping: columnIndices } = detectHeaderRow(worksheet, columnMapping);
+  // Detect header row and column mapping - using type assertion
+  const { headerRowNumber, columnMapping: columnIndices } = detectHeaderRow(worksheet as any as Worksheet, columnMapping);
   
-  // Extract program name
-  const programName = extractProgramName(worksheet, headerRowNumber);
+  // Extract program name - using type assertion
+  const programName = extractProgramName(worksheet as any as Worksheet, headerRowNumber);
 
   // Parse workouts
   const workouts: Workout[] = [];
   let currentWorkout: Workout | null = null;
 
-  worksheet.eachRow((row, rowNumber) => {
+  worksheet.eachRow((row: any, rowNumber: number) => {
     if (rowNumber <= headerRowNumber) return; // Skip header rows
 
     try {
@@ -457,6 +495,10 @@ function extractCSVProgramName(data: any[]): string {
  * @returns A WorkoutProgram object
  */
 async function parseCSVFile(file: File, columnMapping: ColumnMappingConfig): Promise<WorkoutProgram> {
+  // Add magic comments for PapaParse as well
+  const papaModule = await import(/* webpackChunkName: "csv-parser" */ 'papaparse') as unknown as { default: PapaParse };
+  const Papa = papaModule.default;
+  
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,

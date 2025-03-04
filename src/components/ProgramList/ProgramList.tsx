@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutProgram } from '../../types';
 import { serviceFactory } from '../../services';
@@ -8,11 +8,64 @@ interface ProgramListProps {
   programs?: WorkoutProgram[];
 }
 
-export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms }) => {
+// Program item component to optimize rendering
+const ProgramItem = memo(({
+  program,
+  onSelect
+}: {
+  program: WorkoutProgram;
+  onSelect: (id: string) => void;
+}) => {
+  return (
+    <li
+      className={styles.item}
+    >
+      <div className={styles.programHeader}>
+        <h3 className={styles.programName}>{program.name}</h3>
+        <span className={styles.workoutCount}>
+          {program.workouts.length} workouts
+        </span>
+      </div>
+      
+      <div className={styles.programStats}>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Last workout:</span>
+          <span className={styles.statValue}>
+            {program.history.length > 0
+              ? new Date(program.history[program.history.length - 1].date).toLocaleDateString()
+              : 'Not started'}
+          </span>
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.statLabel}>Completed:</span>
+          <span className={styles.statValue}>
+            {program.history.length} sessions
+          </span>
+        </div>
+      </div>
+
+      <button
+        className={styles.viewButton}
+        onClick={() => onSelect(program.id)}
+        aria-label={`View ${program.name} details`}
+      >
+        View Program
+      </button>
+    </li>
+  );
+});
+
+// Memoized ProgramList component
+export const ProgramList = memo<ProgramListProps>(({ programs: propPrograms }) => {
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Memoized handler for program selection - moved to top level to avoid conditional hook call
+  const handleProgramSelect = useCallback((programId: string) => {
+    navigate(`/program/${programId}`);
+  }, [navigate]);
 
   useEffect(() => {
     // If programs are provided as props, use them directly
@@ -79,7 +132,7 @@ export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms
   }
 
   return (
-    <div 
+    <div
       className={styles.container}
       role="region"
       aria-label="Workout Programs"
@@ -87,44 +140,13 @@ export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms
       <h2 className={styles.title}>Your Workout Programs</h2>
       <ul className={styles.list}>
         {programs.map(program => (
-          <li 
+          <ProgramItem
             key={program.id}
-            className={styles.item}
-          >
-            <div className={styles.programHeader}>
-              <h3 className={styles.programName}>{program.name}</h3>
-              <span className={styles.workoutCount}>
-                {program.workouts.length} workouts
-              </span>
-            </div>
-            
-            <div className={styles.programStats}>
-              <div className={styles.stat}>
-                <span className={styles.statLabel}>Last workout:</span>
-                <span className={styles.statValue}>
-                  {program.history.length > 0
-                    ? new Date(program.history[program.history.length - 1].date).toLocaleDateString()
-                    : 'Not started'}
-                </span>
-              </div>
-              <div className={styles.stat}>
-                <span className={styles.statLabel}>Completed:</span>
-                <span className={styles.statValue}>
-                  {program.history.length} sessions
-                </span>
-              </div>
-            </div>
-
-            <button
-              className={styles.viewButton}
-              onClick={() => navigate(`/program/${program.id}`)}
-              aria-label={`View ${program.name} details`}
-            >
-              View Program
-            </button>
-          </li>
+            program={program}
+            onSelect={handleProgramSelect}
+          />
         ))}
       </ul>
     </div>
   );
-};
+});

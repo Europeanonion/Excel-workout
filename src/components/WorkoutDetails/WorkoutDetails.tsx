@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { WorkoutProgram, type Workout, type Exercise } from '../../types';
 import { serviceFactory } from '../../services';
 import { WorkoutSession } from '../WorkoutSession';
+import { useDebugTracking } from '../../hooks/useDebugTracking';
 import styles from './workout-details.module.css';
 
 interface Props {
@@ -34,6 +35,9 @@ const ExerciseComponent: React.FC<{ exercise: Exercise }> = ({ exercise }) => (
 );
 
 export const WorkoutDetails: React.FC<Props> = ({ programId }) => {
+  // Add debug tracking
+  useDebugTracking('WorkoutDetails');
+  
   const [program, setProgram] = useState<WorkoutProgram | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

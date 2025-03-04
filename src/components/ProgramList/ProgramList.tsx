@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutProgram } from '../../types';
 import { serviceFactory } from '../../services';
+import { useDebugTracking } from '../../hooks/useDebugTracking';
 import styles from './program-list.module.css';
 
 interface ProgramListProps {
@@ -9,6 +10,9 @@ interface ProgramListProps {
 }
 
 export const ProgramList: React.FC<ProgramListProps> = ({ programs: propPrograms }) => {
+  // Add debug tracking
+  useDebugTracking('ProgramList');
+  
   const navigate = useNavigate();
   const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
   const [isLoading, setIsLoading] = useState(true);

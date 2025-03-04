@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useExcelUpload } from '../../hooks/useExcelUpload';
 import { ColumnMappingConfig, WorkoutProgram } from '../../types';
+import { useDebugTracking } from '../../hooks/useDebugTracking';
 import styles from './excel-uploader.module.css';
 
 interface ExcelUploaderProps {
@@ -17,6 +18,9 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({
   onUploadSuccess,
   onUploadError
 }) => {
+  // Add debug tracking
+  useDebugTracking('ExcelUploader');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showColumnMapping, setShowColumnMapping] = useState(false);

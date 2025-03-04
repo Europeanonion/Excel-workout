@@ -1,0 +1,29 @@
+# React Components
+./src/App.tsx
+./src/ErrorBoundary.tsx
+./src/components/Auth/AuthContext.tsx
+./src/components/Auth/AuthPage.tsx
+./src/components/Auth/LoginForm.tsx
+./src/components/Auth/RegisterForm.tsx
+./src/components/ExcelUploader/ExcelUploader.tsx
+./src/components/InstallPrompt/InstallPrompt.tsx
+./src/components/OnlineStatus/OnlineStatusIndicator.tsx
+./src/components/ProgramList/ProgramList.tsx
+./src/components/WorkoutDetails/WorkoutDetails.tsx
+./src/components/WorkoutSession/WorkoutSession.tsx
+./src/index.tsx
+
+
+# Component Props
+./src/ErrorBoundary.tsx:interface Props {
+./src/components/Auth/LoginForm.tsx:interface LoginFormProps {
+./src/components/Auth/RegisterForm.tsx:interface RegisterFormProps {
+./src/components/ExcelUploader/ExcelUploader.tsx:interface ExcelUploaderProps {
+./src/components/ProgramList/ProgramList.tsx:interface ProgramListProps {
+./src/components/WorkoutDetails/WorkoutDetails.tsx:interface Props {
+./src/components/WorkoutSession/WorkoutSession.tsx:interface Props {
+
+
+# React Contexts
+./src/components/Auth/AuthContext.tsx:const AuthContext = createContext<AuthContextType | undefined>(undefined);
+./src/components/Auth/AuthContext.tsx:import React, { createContext, useContext, useState, useEffect } from 'react';

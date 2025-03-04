@@ -1,0 +1,45 @@
+# State Management
+
+## useState Usage
+56
+
+## useReducer Usage
+0
+
+## Context Usage
+2
+
+## Local Storage Usage
+./src/firebase/sync.ts:import { getAllWorkoutPrograms, storeWorkoutProgram as saveWorkoutProgram, deleteWorkoutProgram } from '../lib/indexedDB';
+./src/setupTests.ts:global.indexedDB = mockIDBFactory;
+./src/services/implementations/firebase/FirebaseSyncService.ts:  private localStorageService: IStorageService;
+./src/services/implementations/firebase/FirebaseSyncService.ts:    localStorageService: IStorageService,
+./src/services/implementations/firebase/FirebaseSyncService.ts:    this.localStorageService = localStorageService;
+./src/services/implementations/firebase/FirebaseSyncService.ts:      const storedOps = localStorage.getItem(pendingOpsKey);
+./src/services/implementations/firebase/FirebaseSyncService.ts:      localStorage.setItem(pendingOpsKey, JSON.stringify(this.pendingOperations));
+./src/services/implementations/firebase/FirebaseSyncService.ts:      const localPrograms = await this.localStorageService.getAllWorkoutPrograms();
+./src/services/implementations/firebase/FirebaseSyncService.ts:      const localPrograms = await this.localStorageService.getAllWorkoutPrograms();
+./src/services/implementations/firebase/FirebaseSyncService.ts:        const sessions = await this.localStorageService.getWorkoutSessions(program.id);
+./src/services/implementations/firebase/FirebaseSyncService.ts:      const localPrograms = await this.localStorageService.getAllWorkoutPrograms();
+./src/services/implementations/firebase/FirebaseSyncService.ts:          await this.localStorageService.storeWorkoutProgram(program);
+./src/services/implementations/firebase/FirebaseSyncService.ts:          await this.localStorageService.storeWorkoutProgram(mergedProgram);
+./src/services/implementations/firebase/FirebaseSyncService.ts:        const localSessions = await this.localStorageService.getWorkoutSessions(session.programId);
+./src/services/implementations/firebase/FirebaseSyncService.ts:          await this.localStorageService.storeWorkoutSession(session);
+./src/services/implementations/firebase/FirebaseSyncService.ts:          await this.localStorageService.storeWorkoutSession(mergedSession);
+./src/services/implementations/firebase/FirebaseSyncService.ts:        const localPrograms = await this.localStorageService.getAllWorkoutPrograms();
+./src/services/implementations/firebase/FirebaseSyncService.ts:            await this.localStorageService.storeWorkoutProgram(program);
+./src/services/implementations/firebase/FirebaseSyncService.ts:            await this.localStorageService.storeWorkoutProgram(mergedProgram);
+./src/services/implementations/firebase/FirebaseSyncService.ts:              await this.localStorageService.deleteWorkoutProgram(localProgram.id);
+./src/services/implementations/firebase/FirebaseSyncService.ts:        const localPrograms = await this.localStorageService.getAllWorkoutPrograms();
+./src/services/implementations/firebase/FirebaseSyncService.ts:          const localSessions = await this.localStorageService.getWorkoutSessions(program.id);
+./src/services/implementations/firebase/FirebaseSyncService.ts:              await this.localStorageService.storeWorkoutSession(session);
+./src/services/implementations/firebase/FirebaseSyncService.ts:              await this.localStorageService.storeWorkoutSession(mergedSession);
+./src/services/ServiceFactory.ts:  private localStorageService: IStorageService | null = null;
+./src/services/ServiceFactory.ts:      this.localStorageService = null;
+./src/services/ServiceFactory.ts:    if (!this.localStorageService) {
+./src/services/ServiceFactory.ts:          this.localStorageService = new IndexedDBStorageService();
+./src/services/ServiceFactory.ts:          this.localStorageService = new MockStorageService();
+./src/services/ServiceFactory.ts:          this.localStorageService.initStorage().catch(err => {
+./src/services/ServiceFactory.ts:    return this.localStorageService;
+./src/services/ServiceFactory.ts:    const localStorageService = this.getLocalStorageService();
+./src/services/ServiceFactory.ts:    await localStorageService.initStorage();

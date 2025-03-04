@@ -1,0 +1,225 @@
+### Project tree
+
+.
+├── Copilot
+│   ├── Co-pilot next action.md
+│   ├── Copilot-memory bank.md
+│   ├── Copilot-progress.md
+│   └── project_analysis
+│       ├── bundle.txt
+│       ├── components.txt
+│       ├── file_types.txt
+│       ├── performance.txt
+│       ├── pwa.txt
+│       ├── report.md
+│       ├── state.txt
+│       └── structure.txt
+├── Critical Vulnerability fixes - potential.txt
+├── build
+│   ├── asset-manifest.json
+│   ├── browserconfig.xml
+│   ├── index.html
+│   ├── manifest.json
+│   ├── service-worker.js
+│   ├── static
+│   │   ├── css
+│   │   └── js
+│   └── templates
+│       └── workout-template.csv
+├── bundle-analysis.json
+├── coverage
+│   ├── clover.xml
+│   ├── coverage-final.json
+│   ├── lcov-report
+│   │   ├── base.css
+│   │   ├── block-navigation.js
+│   │   ├── favicon.png
+│   │   ├── index.html
+│   │   ├── prettify.css
+│   │   ├── prettify.js
+│   │   ├── sort-arrow-sprite.png
+│   │   ├── sorter.js
+│   │   └── src
+│   └── lcov.info
+├── dependencies_backup.txt
+├── jest.config.js
+├── memory-bank
+│   ├── HighLevelOverview.md
+│   ├── Project notes
+│   │   ├── AIAgentOptimizationAnalysis.md
+│   │   ├── APIAbstractionLayerImplementation.md
+│   │   ├── ArchitecturalRecommendationsPrioritized.md
+│   │   ├── ExcelParser_AdvancedImprovementsAnalysis.md
+│   │   ├── ExcelParser_ImplementedImprovements.md
+│   │   ├── FirebaseIntegrationImplementation.md
+│   │   ├── PWAConfigurationAnalysis.md
+│   │   ├── PerformanceOptimizationPlan.md
+│   │   └── TestSuiteImprovements.md
+│   ├── ProjectStructureAnalysis.md
+│   ├── README.md
+│   ├── VERSION.md
+│   ├── activeContext.md
+│   ├── consolidated
+│   │   └── memoryBank.md
+│   ├── decisionLog.md
+│   ├── productContext.md
+│   ├── progress.md
+│   ├── projectBrief.md
+│   ├── shared
+│   │   └── memoryBankHandler.md
+│   ├── systemPatterns.md
+│   └── techContext.md
+├── package-lock.json
+├── package.json
+├── public
+│   ├── index.html
+│   ├── manifest.json
+│   └── templates
+│       └── workout-template.csv
+├── sourcemap-analysis.json
+├── src
+│   ├── App.css
+│   ├── App.test.tsx
+│   ├── App.tsx
+│   ├── ErrorBoundary.tsx
+│   ├── components
+│   │   ├── Auth
+│   │   ├── ExcelUploader
+│   │   ├── LazyImage
+│   │   ├── OnlineStatus
+│   │   ├── ProgramList
+│   │   ├── WorkoutDetails
+│   │   └── WorkoutSession
+│   ├── features
+│   │   └── excelParsing
+│   ├── firebase
+│   │   ├── __mocks__
+│   │   ├── auth.ts
+│   │   ├── config.ts
+│   │   ├── firestore.ts
+│   │   └── sync.ts
+│   ├── hooks
+│   │   ├── useExcelUpload.ts
+│   │   └── useIntersectionObserver.ts
+│   ├── index.css
+│   ├── index.tsx
+│   ├── lib
+│   │   └── indexedDB.ts
+│   ├── reportWebVitals.ts
+│   ├── serviceWorkerRegistration.ts
+│   ├── services
+│   │   ├── ServiceFactory.ts
+│   │   ├── __mocks__
+│   │   ├── implementations
+│   │   ├── index.ts
+│   │   └── interfaces
+│   ├── setupTests.ts
+│   └── types
+│       ├── css.d.ts
+│       ├── index.ts
+│       └── lodash.d.ts
+├── test-output.txt
+├── tsconfig.json
+└── workout.csv
+
+36 directories, 84 files
+
+
+
+
+
+.
+./.git
+./Copilot
+./build
+./coverage
+./coverage/lcov-report
+./coverage/lcov-report/src
+./coverage/lcov-report/src/components
+./coverage/lcov-report/src/components/ExcelUploader
+./coverage/lcov-report/src/components/WorkoutDetails
+./coverage/lcov-report/src/features
+./coverage/lcov-report/src/features/excelParsing
+./coverage/lcov-report/src/lib
+./coverage/lcov-report/src/types
+./memory-bank
+./memory-bank/Project notes
+./memory-bank/consolidated
+./memory-bank/shared
+./node_modules
+./project_analysis
+./public
+./public/templates
+./src
+./src/components
+./src/components/Auth
+./src/components/ExcelUploader
+./src/components/InstallPrompt
+./src/components/OnlineStatus
+./src/components/ProgramList
+./src/components/WorkoutDetails
+./src/components/WorkoutSession
+./src/features
+./src/features/excelParsing
+./src/firebase
+./src/firebase/__mocks__
+./src/hooks
+./src/lib
+./src/services
+./src/services/__mocks__
+./src/services/implementations
+./src/services/implementations/firebase
+./src/services/implementations/indexeddb
+./src/services/implementations/mock
+./src/services/implementations/mock/__mocks__
+./src/services/interfaces
+./src/types
+
+
+# File Counts by Directory
+.: 21 files
+./.git: 8 files
+./project_analysis: 1 files
+./memory-bank: 11 files
+./memory-bank/shared: 1 files
+./memory-bank/consolidated: 1 files
+./memory-bank/Project notes: 9 files
+./coverage: 3 files
+./coverage/lcov-report: 8 files
+./coverage/lcov-report/src: 3 files
+./coverage/lcov-report/src/types: 2 files
+./coverage/lcov-report/src/components: 0 files
+./coverage/lcov-report/src/components/WorkoutDetails: 2 files
+./coverage/lcov-report/src/components/ExcelUploader: 2 files
+./coverage/lcov-report/src/lib: 2 files
+./coverage/lcov-report/src/features: 0 files
+./coverage/lcov-report/src/features/excelParsing: 2 files
+./src: 9 files
+./src/types: 3 files
+./src/hooks: 1 files
+./src/components: 0 files
+./src/components/OnlineStatus: 3 files
+./src/components/InstallPrompt: 3 files
+./src/components/WorkoutSession: 4 files
+./src/components/Auth: 6 files
+./src/components/ProgramList: 4 files
+./src/components/WorkoutDetails: 4 files
+./src/components/ExcelUploader: 4 files
+./src/firebase: 8 files
+./src/firebase/__mocks__: 1 files
+./src/lib: 1 files
+./src/features: 0 files
+./src/features/excelParsing: 3 files
+./src/services: 2 files
+./src/services/__mocks__: 1 files
+./src/services/interfaces: 4 files
+./src/services/implementations: 1 files
+./src/services/implementations/indexeddb: 2 files
+./src/services/implementations/firebase: 4 files
+./src/services/implementations/mock: 4 files
+./src/services/implementations/mock/__mocks__: 1 files
+./Copilot: 3 files
+./public: 4 files
+./public/templates: 1 files
+./build: 5 files
+./node_modules: 2 files

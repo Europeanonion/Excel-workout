@@ -1,0 +1,47 @@
+# Performance Optimization Analysis
+
+## Lazy-Loaded Components/Modules
+./src/App.tsx:const ExcelUploader = lazy(() => import('./components/ExcelUploader').then(module => ({ default: module.ExcelUploader })));
+./src/App.tsx:const ProgramList = lazy(() => import('./components/ProgramList').then(module => ({ default: module.ProgramList })));
+./src/App.tsx:const WorkoutDetails = lazy(() => import('./components/WorkoutDetails').then(module => ({ default: module.WorkoutDetails })));
+./src/hooks/useExcelUpload.ts:      const { processExcelFile, processCSVFile } = await import('../features/excelParsing/excelProcessorUtils');
+./src/reportWebVitals.ts:    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+./src/features/excelParsing/excelParser.ts:  const exceljs = await import(/* webpackChunkName: "excel-parser" */ 'exceljs') as unknown as { Workbook: ExcelJS['Workbook'] };
+./src/features/excelParsing/excelParser.ts:  const papaModule = await import(/* webpackChunkName: "csv-parser" */ 'papaparse') as unknown as { default: PapaParse };
+./src/features/excelParsing/excelProcessorUtils.ts:  const exceljs = await import('exceljs');
+./src/features/excelParsing/excelProcessorUtils.ts:  const { parseExcelFile } = await import('./excelParser');
+./src/features/excelParsing/excelProcessorUtils.ts:  const Papa = await import('papaparse');
+./src/features/excelParsing/excelProcessorUtils.ts:  const { parseExcelFile } = await import('./excelParser');
+
+## Memoized Components
+./src/components/ProgramList/ProgramList.tsx:const ProgramItem = memo(({
+./src/components/ExcelUploader/ExcelUploader.tsx: * Optimized with React.memo to prevent unnecessary re-renders.
+
+## Performance Hooks Usage
+./src/App.tsx:import { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+./src/App.tsx:  const handleUploadSuccess = useCallback(() => {
+./src/App.tsx:  const handleUploadError = useCallback((error: Error) => {
+./src/hooks/useExcelUpload.ts:import { useState, useCallback } from 'react';
+./src/hooks/useExcelUpload.ts:  const reset = useCallback(() => {
+./src/hooks/useExcelUpload.ts:  const validateFile = useCallback((file: File): boolean => {
+./src/hooks/useExcelUpload.ts:  const uploadExcel = useCallback(async (file: File, columnMapping?: ColumnMappingConfig): Promise<void> => {
+./src/hooks/useExcelUpload.ts:  const confirmUpload = useCallback(async (): Promise<void> => {
+./src/components/WorkoutSession/WorkoutSession.tsx:import { useState, useEffect, useCallback, useRef, FC, DragEvent } from 'react';
+./src/components/WorkoutSession/WorkoutSession.tsx:  const calculateExerciseProgress = useCallback((exerciseName: string): number => {
+./src/components/WorkoutSession/WorkoutSession.tsx:  const startTimer = useCallback((exerciseName: string | null, restTime: number = 0) => {
+./src/components/WorkoutSession/WorkoutSession.tsx:  const stopTimer = useCallback(() => {
+./src/components/WorkoutSession/WorkoutSession.tsx:  const resetTimer = useCallback((exerciseName: string | null, restTime: number = 0) => {
+./src/components/ProgramList/ProgramList.tsx:import React, { useState, useEffect, useCallback, memo } from 'react';
+./src/components/ProgramList/ProgramList.tsx:  const handleProgramSelect = useCallback((programId: string) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleReset = useCallback(() => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleDownloadTemplate = useCallback(() => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleColumnMappingChange = useCallback((field: keyof ColumnMappingConfig, value: string) => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const toggleColumnMapping = useCallback(() => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const handleConfirmUpload = useCallback(async () => {
+./src/components/ExcelUploader/ExcelUploader.tsx:   const renderPreview = useCallback((data: WorkoutProgram) => {

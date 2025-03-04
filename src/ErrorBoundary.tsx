@@ -1,29 +1,60 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo } from 'react';
 
-interface Props {
-  children: ReactNode;
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
+  error: Error | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false
-  };
-
-  public static getDerivedStateFromError(): State {
-    return { hasError: true };
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { 
+      hasError: false,
+      error: null
+    };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
   }
 
-  public render() {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Log to console for now - you can enhance with proper logging later
+    console.error("Application error:", error);
+    console.error("Component stack:", errorInfo.componentStack);
+  }
+
+  render() {
     if (this.state.hasError) {
-      return <h1>Something went wrong.</h1>;
+      return (
+        <div style={{
+          padding: '20px',
+          margin: '20px',
+          border: '1px solid #f44336',
+          borderRadius: '4px',
+          backgroundColor: '#ffebee'
+        }}>
+          <h2>Something went wrong</h2>
+          <p>Error: {this.state.error?.message || 'Unknown error'}</p>
+          <button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#2196f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      );
     }
 
     return this.props.children;

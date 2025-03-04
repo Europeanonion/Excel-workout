@@ -1,0 +1,28 @@
+# Bundle Analysis
+
+## JavaScript Bundle Files
+924K	./build/static/js/excel-vendor.d202ee83.chunk.js
+180K	./build/static/js/791.8aff68a3.js
+128K	./build/static/js/730.8840c400.js
+84K	./build/static/js/473.8153f6bb.js
+72K	./build/static/js/536.b03d2c3d.js
+44K	./build/static/js/0.cf103921.js
+20K	./build/static/js/csv-vendor.7c01df3c.chunk.js
+16K	./build/static/js/main~67de3e31.1a9b38f9.js
+16K	./build/static/js/961.f29eb5b1.js
+16K	./build/static/js/311.c78c0ad3.chunk.js
+12K	./build/static/js/main~94ab8ef4.d2f1e512.js
+12K	./build/static/js/main~84781932.bdd71054.js
+12K	./build/static/js/700.3ff0cb35.js
+12K	./build/static/js/641.aaa3b95f.js
+12K	./build/static/js/52.afe36477.js
+12K	./build/static/js/387.63d12f43.js
+12K	./build/static/js/347.1c1e3730.js
+12K	./build/static/js/216.cbdb2184.js
+8.0K	./build/static/js/952.d015352b.chunk.js
+8.0K	./build/static/js/94.e3cda835.chunk.js
+8.0K	./build/static/js/453.34029fe2.chunk.js
+8.0K	./build/static/js/402.f94d2b69.js
+4.0K	./build/static/js/96.fc7b9e28.chunk.js
+4.0K	./build/static/js/830.f478f104.chunk.js
+4.0K	./build/static/js/475.34feaaa8.js
